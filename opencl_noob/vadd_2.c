@@ -1,5 +1,27 @@
 /**
  * ------------------------------
+ * BASIC TERMS
+ * ------------------------------
+ * Kernel execution commands - Execute a kernel on the processing elements of a device
+ * Memory commands - Transfer data to/from/between memory objects, or map/unmap memory objects from the host address space
+ * Synchronization commands - Constrain the order of execution of commands
+ * ------------------------------
+ * ------------------------------
+ * IDs
+ * ------------------------------
+ * An index space is defined when a kernel is submitted for execution by the host
+    * Kernel instance = work-item -- identified by its point in index space
+        * index space provides global ID for work-item
+    * Work-items are organized into work-groups
+        * Work-groups are assigned work-group ID (same dimensions as index space above)
+        * Work-items assigned local ID within work-group (can be identified by global ID or local ID + work-group ID)
+ * NDRange
+    * N-dimensional index space, where N = 1, 2, or 3
+    * integer array of length N, specifying the extent of the index space in each dimension
+        * starting @ an offset index F (zero default)
+    * each work-item's global ID and local ID are N-dimensional tuples
+    * Work-groups assigned IDs using array of length N which defines # of work-groups in each dimension
+ * ------------------------------
  * DIMENSIONS
  * ------------------------------
  * Global dimensions - the whole problem space (e.g., 1024x1024 image space)
