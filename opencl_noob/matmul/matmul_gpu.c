@@ -9,6 +9,7 @@
     #include "../err_code.h"
     #include "../device_info.h"
     #include <math.h>
+    #include <time.h>
     #endif
 
     #define SIZE 1024
@@ -142,12 +143,25 @@
         printf("Set kernel args\n");
 
         // enqueue 2d kernel
+        srand(time(NULL));
+        clock_t start, end;
         const size_t global_size[2]= {SIZE, SIZE};
+
+        float flop = (float) SIZE * SIZE * 2 * SIZE;
+        printf("%.6f GFLOP to multiply matrices\n", flop/1e9);
+
         err = clEnqueueNDRangeKernel(commands, mat_mul_ko, 2, NULL, global_size, NULL, 0, NULL, NULL);
         checkError(err, "Setting up 2d kernel");
 
+        start = clock();
         err = clFinish(commands);
+        end = clock();
+
+        double gpu_time = ((double) (end - start)) / CLOCKS_PER_SEC;
         checkError(err, "Finishing commands in device");
+
+        printf("GPUP Time: %f seconds\n", gpu_time);
+        printf("%.6f TFLOP/S\n", flop/gpu_time/1e12);
 
         // read back result from device to host
         err = clEnqueueReadBuffer(commands, d_c, CL_TRUE, 0, sizeof(float) * count, h_c, 0, NULL, NULL);
@@ -163,7 +177,7 @@
                     expected += h_a[SIZE * i + k] * h_b[SIZE * k + j]; // h_a[K * i + k] * h_b[K * k + j]  
                 }
 
-                float actual = h_c[SIZE * i + j]; // h_c[K * m + j]
+                float actual = h_c[SIZE * i + j]; // h_c[N * i + j]
                 float diff = fabs(actual - expected);
                 if (diff * diff < TOL * TOL) {
                     correct++;
