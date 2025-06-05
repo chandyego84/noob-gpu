@@ -51,20 +51,35 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
 4. Repeat until all wavefronts exhausted/done executing in SM/CU
 
 ## NOOB GPU Architecture
+### GPU
+![GPU_TOP](img/NOOB_GPU_TOP.jpeg) 
+
+### Compute Unit
+![CU](img/NOOB_GPU_CU.jpeg) 
+
+
 ### (Global):
 - Global Data Memory (think DRAM) 
 - Global Instruction/Program Memory
 ### GPU
 - Device Control Register - stores metadata of how kernels should be executed by GPU, e.g., how many threads for kernel that was launched
-- Block Scheduler - organizes threads into blocks that can be executed in parallel on a CU and dispatches these blocks to available CUs
+- Block Dispatcher - organizes threads into blocks that can be executed in parallel on a CU and dispatches these blocks to available CUs
     - Blocks that can be launched - as many as needed for the kernel workload (queued if all CUs are taken up)
-- Memory Controller - coordinates between global memory and cache
+- Memory Controller - coordinates global memory accesses from CUs
 - ### Compute Unit (x4)
-    - Wavefront scheduler - schedules/dispatches wavefronts to SIMD units (GCN - up to 10 wavefronts/SIMD unit = 40 wavefronts/CU) 
-    - Vector Register File - split evenly between the four SIMD units to store data
+    - Wavefront Dispatcher - dispatches wavefronts (64 threads/wave) to SIMD units 
+    - Scheduler
+        - Considers a wave from one of the SIMD units for execution, selected in a round-robin fashion between SIMDs
+        - Issues up to one instruction per wavefront on the selected SIMD
+    - Instruction Decoder - breaks down an instruction into opcode, source/destination registers, immediate, etc.
     - ###  SIMD Unit (x4/CU)
-        - Program Counter - for a wavefront
-        - Instruction Buffer (GCN - up to 10 wavefronts) - will only store up to 1 wavefront for simplicity
-        - Instruction Fetcher - reads next instruction using PC
-        - Instruction Decoder - breaks down an instruction into opcode, source/destination registers, immediate, etc.
-        - ALU (GCN - 16 lanes)
+        - Holds up to one wavefront at a time
+            - One instruction takes 4 clock cycles to finish for a wavefront, since the SIMD is 16-wide.
+        - Instruction Buffer
+            - Holds decoded instructions for one wavefront
+            - For just one wavefront/SIMD, this is unnecessary, but it is effective if more wavefronts per SIMD are added in the future.
+        - Program Counter
+            - Each wavefront has its own PC
+        - ALU (16 lanes)
+        - Load/Store Unit (16)
+        - Vector Register File - Registers to store data for up to 1 wavefront
