@@ -79,7 +79,6 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
             - Holds decoded instructions for one wavefront
             - For just one wavefront/SIMD, this is unnecessary, but it is effective if more wavefronts per SIMD are added in the future.
         - Program Counter
-            - Each wavefront has its own PC
         - ALU (16 lanes)
         - Load/Store Unit (16)
         - Vector Register File - Registers to store data for up to 1 wavefront

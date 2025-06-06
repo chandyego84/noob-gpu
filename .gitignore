@@ -1,2 +1,5 @@
 .vscode/*
 **/*.exe
+*.xml
+sim_build
+.venv
