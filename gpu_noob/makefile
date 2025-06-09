@@ -1,13 +1,19 @@
+### ARGS START ###
 # ---- Simulator Selection ----
 SIM ?= icarus
 
+# ---- Wave file (FST file) ----
+WAVE ?= 1
+
 # ---- Language Selection ----
 TOPLEVEL_LANG ?= verilog
+### ARGS END ###
 
+#############################################
 # ---- Design and Testbench Configuration ----
 DUT ?= PC
 TESTBENCH ?= pc_tb
-
+#############################################
 # ---- Source and Testbench Paths ----
 # List all Verilog source files needed for simulation, including submodules
 # Add more .v files as needed for your hierarchy
@@ -18,7 +24,7 @@ TOPLEVEL = $(DUT)
 
 # Name of the Python testbench module
 MODULE = $(TESTBENCH)
-
+#############################################
 
 export PYTHONPATH := $(PWD)/test:$(PYTHONPATH) # add python test dir to path
 include $(shell cocotb-config --makefiles)/Makefile.sim # cocotb makefile include
