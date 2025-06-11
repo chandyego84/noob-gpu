@@ -67,14 +67,13 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
     - Blocks that can be launched - as many as needed for the kernel workload (queued if all CUs are taken up)
 - Memory Controller - coordinates global memory accesses from CUs
 - ### Compute Unit (x4)
-    - Wavefront Dispatcher - dispatches wavefronts (64 threads/wave) to SIMD units 
+    - Wavefront Dispatcher - dispatches wavefronts (16 threads/wave) to SIMD units 
     - Scheduler
         - Considers a wave from one of the SIMD units for execution, selected in a round-robin fashion between SIMDs
         - Issues up to one instruction per wavefront on the selected SIMD
     - Instruction Decoder - breaks down an instruction into opcode, source/destination registers, immediate, etc.
     - ###  SIMD Unit (x4/CU)
         - Holds up to one wavefront at a time
-            - One instruction takes 4 clock cycles to finish for a wavefront, since the SIMD is 16-wide.
         - Instruction Buffer
             - Holds decoded instructions for one wavefront
             - For just one wavefront/SIMD, this is unnecessary, but it is effective if more wavefronts per SIMD are added in the future.
@@ -82,3 +81,30 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
         - ALU (16 lanes)
         - Load/Store Unit (16)
         - Vector Register File - Registers to store data for up to 1 wavefront
+
+## Architecture Information:
+__Doubleword__: 64 bits  
+__Word__: 32 bits  
+
+__Instruction format__: Each instruction takes exactly one word.   
+__Registers__: 64 bits x 32 registers for each SIMD lane (need 5b for register addresses within in each lane)
+- 16 lanes/SIMD unit means 16 x 32 registers = 512 registers/SIMD unit
+- 4 KB of data per SIMD unit
+
+__Program Memory__: 32 bits x 64 registers (Up to 64 instructions, need 6b for addresses)  
+__Data Memory__: 64 bits x 128 registers = 1 KB data (need 7b for addresses)
+
+## ISA
+Instructions have this format: | opcode: 6b | Rd: 7b | Rm: 7b | Rn: 7b | Other: 5b |
+
+
+| Mnemonic | Instruction Operation | Opcode | Notes
+| :---------------- | :------: | :----------------: | :----: |
+| LDUR |   LDUR rd, rm | 000000 | Rd = global_mem[Rm]
+| STUR |   STUR rn, rm | 000001 | global_mem[Rm] = Rn
+| ADD |  ADD rd, rm, rn | 000010 | Rd = Rm + Rn
+| MUL |  MUL rd, rm, rn  | 000011 | Rd = Rm * Rn
+| DIV |  DIV rd, rm, rn  | 000100 | Rd = Rm / Rn
+| AND | AND rd, rm, rn | 000101 | Rd = Rm bitwise_AND Rn
+| ORR | ORR rd, rm, rn | 000110 | Rd = Rm  bitwise_OR Rn
+| CONST | CONST rd, imm_19 | 000111 | Rd = imm_19 (imm_19 = Rd_Rm_Rn_Other)

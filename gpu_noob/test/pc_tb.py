@@ -7,9 +7,9 @@ async def log_signals(dut):
     signals = {
         "clk": dut.clk,
         "rst": dut.rst,
-        "dispatch_new_wave": dut.dispatch_new_wave,
+        "DISPATCH_NEW_WAVE": dut.DISPATCH_NEW_WAVE,
         "active_context": dut.active_context,
-        "update_pc": dut.update_pc,
+        "UPDATE_PC": dut.UPDATE_PC,
         "pc_out": dut.pc_out
     }
     cycle = 0
@@ -33,8 +33,8 @@ async def test_pc(dut):
 
     # Initial reset
     dut.rst.value = 1
-    dut.update_pc.value = 0
-    dut.dispatch_new_wave.value = 0
+    dut.UPDATE_PC.value = 0
+    dut.DISPATCH_NEW_WAVE.value = 0
     dut.active_context = 0
     await Timer(20, units="ns")  # Hold reset for a while
     dut.rst.value = 0
@@ -45,21 +45,21 @@ async def test_pc(dut):
         dut.active_context.value = i
         assert dut.pc_out.value == 0, f"Expected pc_out = 0 after reset for context {i}"
 
-    # Test wave dispatch: set active_context and dispatch_new_wave
+    # Test wave dispatch: set active_context and DISPATCH_NEW_WAVE
     for i in range(5):
         dut.active_context.value = i
-        dut.dispatch_new_wave.value = 1
+        dut.DISPATCH_NEW_WAVE.value = 1
         await RisingEdge(dut.clk)
-        dut.dispatch_new_wave.value = 0
+        dut.DISPATCH_NEW_WAVE.value = 0
         assert dut.pc_out.value == 0, f"Expected pc_out = 0 after wave dispatch for context {i}"
 
-    # Test PC update: set update_pc and check increment
+    # Test PC update: set UPDATE_PC and check increment
     for c in range(5):
         # switch to context c
         dut.active_context.value = c
         for i in range(3):  # increment PC 3 times per context
-            dut.update_pc.value = 1
+            dut.UPDATE_PC.value = 1
             await RisingEdge(dut.clk)
-            dut.update_pc.value = 0
+            dut.UPDATE_PC.value = 0
             await RisingEdge(dut.clk)
             assert dut.pc_out.value == i + 1, f"Expected pc_out = {i + 1}, Actual pc_out = {dut.pc_out.value} for C{c}"

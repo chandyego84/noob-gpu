@@ -1,8 +1,7 @@
 `timescale 1ns/1ps
 
 // Each SIMD unit comes with a PC to track each wave
-// Assuming:
-    // No branching (ugh)
+// No branching implemented
 module PC #(
     parameter PROGRAM_MEM_ADDR_WIDTH = 32, // program memory addresses are 32b, though actual address space is much smaller
     parameter NUM_WAVES = 5 // max number of waves/SIMD
@@ -12,8 +11,8 @@ module PC #(
     input wire rst,
 
     // signals
-    input wire update_pc, // signal to update current wavefront's PC
-    input wire dispatch_new_wave, // signal to indicate a new wave was dispatched to SIMD unit
+    input wire UPDATE_PC, // signal to update current wavefront's PC
+    input wire DISPATCH_NEW_WAVE, // signal to indicate a new wave was dispatched to SIMD unit
 
     // contexts
     input  wire [$clog2(NUM_WAVES)-1:0] active_context,
@@ -33,13 +32,13 @@ always @ (posedge(clk)) begin
         end        
     end
 
-    if (dispatch_new_wave) begin
+    if (DISPATCH_NEW_WAVE) begin
         // new wave dispatched and starts back at 0
         pc_out <= 0;
         pc_contexts[active_context] <= 0;
     end 
 
-    else if (update_pc) begin
+    else if (UPDATE_PC) begin
         // update active context pc
         pc_out <= pc_contexts[active_context] + 1;
         pc_contexts[active_context] <= pc_contexts[active_context] + 1;
