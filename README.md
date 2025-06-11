@@ -27,7 +27,7 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
     - Each thread block is composed of warps/wavefronts which can be executed in lockstep
     - All threads in a warp are scheduled onto a sigle SM/CU--a single SM/CU can typically store and execute multiple warps/wavefronts
     - The results of the execution may of a warp/wavefront usually do not occur in a single clock cycle
-    - For AMD GPUs: wavefront size is 64 threads 
+    - For modern GPUs: wavefront size is typically 32 threads 
 
 - Streaming Multiprocessor (SM)/Compute Unit (CU) -The processing heart of GPUs
     - Contains warp/wavefront scheduler and SIMD units (plus others like cache, scalar units, local data share, etc., but those are not important for the purposes of this) 
@@ -67,7 +67,7 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
     - Blocks that can be launched - as many as needed for the kernel workload (queued if all CUs are taken up)
 - Memory Controller - coordinates global memory accesses from CUs
 - ### Compute Unit (x4)
-    - Wavefront Dispatcher - dispatches wavefronts (16 threads/wave) to SIMD units 
+    - Wavefront Dispatcher - dispatches wavefronts (64 threads/wave) to SIMD units 
     - Scheduler
         - Considers a wave from one of the SIMD units for execution, selected in a round-robin fashion between SIMDs
         - Issues up to one instruction per wavefront on the selected SIMD
@@ -108,3 +108,46 @@ Instructions have this format: | opcode: 6b | Rd: 7b | Rm: 7b | Rn: 7b | Other: 
 | AND | AND rd, rm, rn | 000101 | Rd = Rm bitwise_AND Rn
 | ORR | ORR rd, rm, rn | 000110 | Rd = Rm  bitwise_OR Rn
 | CONST | CONST rd, imm_19 | 000111 | Rd = imm_19 (imm_19 = Rd_Rm_Rn_Other)
+
+## Registers
+Each SIMD lane has 64 bits x 32 registers.  
+```R0```: zero  
+```R1-R3```: %blockIdx, %blockDim, and %threadIdx respectively  
+```R4-R31```: general purpose data
+
+**Important parameters**:  
+- ```%blockIdx```: block's ID within a block grid (0 through numberOfBlocks-1)
+    - Same for all threads in a block
+- ```%blockDim```: number of threads per block
+    - Same for all blocks
+- ```%threadIdx```: thread's ID within a block (0 through blockDim-1)
+    - Unique per thread within a block 
+
+
+## Kernel Examples
+### Vector addition
+```
+.threads 8
+.data 0 1 2 3 4 5 6 7 ; matrix A (1 x 8)
+.data 0 1 2 3 4 5 6 7 ; matrix B (1 x 8)
+
+MUL R4, %blockIdx, %blockDim 
+ADD R4, R4, %threadIdx ; i = blockIdx * blockDim + threadIdx 
+
+CONST R5, #0 ; baseA (matrix A base address) 
+CONST R6, #8 ; baseB (matrix B base address) 
+CONST R7, #16 ; baseC (matrix C base address) 
+
+ADD R8, R5, R4 ; addr(A[i]) = baseA + i 
+LDR R8, R8 ; load A[i] from global memory 
+
+ADD R9, R6, R4 ; addr(B[i]) = baseB + i 
+LDR R9, R9 ; load B[i] from global memory 
+
+ADD R10, R8, R9 ; C[i] = A[i] + B[i] 
+
+ADD R11, R7, R4 ; addr(C[i]) = baseC + i 
+STR R10, R11 ; store C[i] in global memory 
+
+RET ; end of kernel
+```

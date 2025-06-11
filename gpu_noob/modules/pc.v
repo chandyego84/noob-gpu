@@ -15,7 +15,7 @@ module PC #(
     input wire DISPATCH_NEW_WAVE, // signal to indicate a new wave was dispatched to SIMD unit
 
     // contexts
-    input  wire [$clog2(NUM_WAVES)-1:0] active_context,
+    input wire [$clog2(NUM_WAVES)-1:0] active_context,
 
     // outputs
     output reg [PROGRAM_MEM_ADDR_WIDTH-1:0] pc_out // PC of the active wavefront

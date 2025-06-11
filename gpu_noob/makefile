@@ -11,8 +11,9 @@ TOPLEVEL_LANG ?= verilog
 
 #############################################
 # ---- Design and Testbench Configuration ----
-DUT ?= PC
-TESTBENCH ?= pc_tb
+# MODIFY DUT and TESTBENCH args to test other modules
+DUT ?= BlockDispatch
+TESTBENCH ?= block_dispatch_tb
 #############################################
 # ---- Source and Testbench Paths ----
 # List all Verilog source files needed for simulation, including submodules
