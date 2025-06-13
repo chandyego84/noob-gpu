@@ -84,3 +84,23 @@ async def test_block_dispatch(dut):
     for i in range(int(dut.num_blocks.value)):
         assert safe_int(dut.core_block_id[i].value) == i, f"On first dispatch, CU{i} should have block_id {i}"
     
+    # test -- CU0 is done executing its block
+    dut.core_done[0].value = 1
+    await RisingEdge(dut.clk)
+    await RisingEdge(dut.clk)
+    assert safe_int(dut.blocks_done.value) == 1, "CU0 is done, blocks_done should be 1"
+    assert safe_int(dut.core_ready[0].value) == 1, "CU0 is done, ready state should be 1"
+    assert safe_int(dut.core_start[0].value) == 0, "CU0 is done, start state should be 0"
+
+    # test -- CU1 is done executing its block
+    dut.core_done[1].value = 1
+    await RisingEdge(dut.clk)
+    await RisingEdge(dut.clk)
+    assert safe_int(dut.blocks_done.value) == 2, "CU1 is done, blocks_done should be 2"
+    assert safe_int(dut.core_ready[1].value) == 1, "CU1 is done, ready state should be 1"
+    assert safe_int(dut.core_start[1].value) == 0, "CU1 is done, start state should be 0" 
+
+    # test -- kernel is done
+    await RisingEdge(dut.clk)
+    assert safe_int(dut.kernel_done) == 1, "All blocks of kernel are done, kernel_done should be 1"
+    
