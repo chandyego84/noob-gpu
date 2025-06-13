@@ -16,7 +16,7 @@ module BlockDispatch #(
 
     // info for each compute unit
     input wire [NUM_CORES-1:0] core_done, // given by compute unit
-    output reg [NUM_CORES-1:0] core_start, 
+    output reg [NUM_CORES-1:0] core_start, // core is working on a block
     output reg [NUM_CORES-1:0] core_ready, // ready for a block
 
     // block_id assigned to each compute unit
@@ -56,7 +56,7 @@ always @ (posedge(clk)) begin
         end
 
         for (i = 0; i < NUM_CORES; i = i + 1) begin
-            if (core_ready[i]) begin
+            if (core_ready[i] && !core_start[i]) begin
                 // a core was recently reset (either finished executing a block or rst by gpu)
                 core_ready[i] <= 0;
 
@@ -68,10 +68,11 @@ always @ (posedge(clk)) begin
                 end
             end
 
-            if (core_done[i]) begin
+            if (core_done[i] && core_start[i]) begin
                 // check if a compute unit has finished its block and set it back to ready state
                 core_ready[i] <= 1;
                 core_start[i] <= 0;
+                // TODO: reset the core's block id
                 blocks_done = blocks_done + 1;
             end
         end
