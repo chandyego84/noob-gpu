@@ -45,8 +45,8 @@ async def log_signals(dut):
         for i in range(int(dut.NUM_CORES.value)):
             dut._log.info(
                 f"  Core {i}: start={(dut.core_start[i].value)} "
-                f"reset={(dut.core_reset[i].value)} "
-                f"block_id={(dut.core_block_id[i].value)} "
+                f"core_ready={(dut.core_ready[i].value)} "
+                f"block_id={safe_int((dut.core_block_id[i].value))} "
                 f"done={(dut.core_done[i].value)}"
             )
         cycle += 1
@@ -72,5 +72,15 @@ async def test_block_dispatch(dut):
     dut.rst.value = 0
     await RisingEdge(dut.clk)
 
+    # test -- after rst, all blockIDs should be 0 and no blocks dispatched
+    for i in range(int(dut.NUM_CORES.value)):
+        assert safe_int(dut.core_block_id[i].value) == 0, f"After reset, block_id for CU{i} should be 0"
+    assert safe_int(dut.blocks_dispatched.value) == 0, "After reset, blocks_dispatched should be 0"
+    assert safe_int(dut.blocks_done.value) == 0, "After reset, blocks_done should be 0"
+    assert safe_int(dut.kernel_done.value) == 0, "After reset, kernel_done should be 0"
 
+    # test -- all cores have correct assigned block
+    await RisingEdge(dut.clk)
+    for i in range(int(dut.num_blocks.value)):
+        assert safe_int(dut.core_block_id[i].value) == i, f"On first dispatch, CU{i} should have block_id {i}"
     
