@@ -57,7 +57,6 @@ always @ (posedge(clk)) begin
 
         for (i = 0; i < NUM_CORES; i = i + 1) begin
             if (core_ready[i] && !core_start[i]) begin
-                // a core was recently reset (either finished executing a block or rst by gpu)
                 core_ready[i] <= 0;
 
                 // check if there is a block that can be given
@@ -70,8 +69,8 @@ always @ (posedge(clk)) begin
 
             if (core_done[i] && core_start[i]) begin
                 // check if a compute unit has finished its block and set it back to ready state
-                core_ready[i] <= 1;
                 core_start[i] <= 0;
+                core_ready[i] <= 1;
                 // TODO: reset the core's block id
                 blocks_done = blocks_done + 1;
             end
