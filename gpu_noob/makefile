@@ -12,13 +12,13 @@ TOPLEVEL_LANG ?= verilog
 #############################################
 # ---- Design and Testbench Configuration ----
 # MODIFY DUT and TESTBENCH args to test other modules
-DUT ?= BlockDispatch
-TESTBENCH ?= block_dispatch_tb
+DUT ?= WaveDispatch
+TESTBENCH ?= wave_dispatch_tb
 #############################################
 # ---- Source and Testbench Paths ----
 # List all Verilog source files needed for simulation, including submodules
 # Add more .v files as needed for your hierarchy
-VERILOG_SOURCES = $(wildcard $(PWD)/modules/*.v)
+VERILOG_SOURCES = $(wildcard $(PWD)/module/*.v)
 
 # Top-level Verilog module name for cocotb
 TOPLEVEL = $(DUT)

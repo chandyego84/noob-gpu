@@ -2,36 +2,14 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 from cocotb.utils import get_sim_time
+from common import safe_int, signed_int
 
 THREADS = 320 # 5 BLOCKS (1 more than there are CUs)
 BLOCK_DIM = 64
 
-def safe_int(val):
-    try:
-        v = int(val)
-
-        if hasattr(val, 'is_resolvable') and not val.is_resolvable:
-            return "X"
-        
-        return v
-        
-    except Exception:
-        return "X"
-
-def signed_int(val):
-    try:
-        if hasattr(val, 'signed_integer'):
-            return val.signed_integer
-        
-        return val            
-    
-    except Exception:
-        return "X"
-
 async def log_signals(dut):
     cycle = 0
     dut._log.info(f"NUM_CORES = {int(dut.NUM_CORES.value)}")
-    dut._log.info(f"WARP_SIZE = {int(dut.WARP_SIZE.value)}")
 
     while True:
         await RisingEdge(dut.clk)
