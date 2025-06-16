@@ -68,7 +68,6 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
 - Memory Controller - coordinates global memory accesses from CUs
 - ### Compute Unit (x4)
     - Wavefront Dispatcher - dispatches wavefronts (64 threads/wave) to SIMD units 
-    - Scheduler
         - Considers a wave from one of the SIMD units for execution, selected in a round-robin fashion between SIMDs
         - Issues up to one instruction per wavefront on the selected SIMD
     - Instruction Decoder - breaks down an instruction into opcode, source/destination registers, immediate, etc.
@@ -123,6 +122,10 @@ Each SIMD lane has 64 bits x 32 registers.
 - ```%threadIdx```: thread's ID within a block (0 through blockDim-1)
     - Unique per thread within a block 
 
+**Global Thread Id Calculation**:  
+%blockIdx * %blockDim + %threadIdx  
+
+%threadId.x = wave_id * wave_size + (warp_cycle * SIMD_width + lane_id)
 
 ## Kernel Examples
 ### Vector addition
