@@ -20,7 +20,7 @@ module BlockDispatch #(
     output reg [NUM_CORES-1:0] core_ready, // ready for a block
 
     // block_id assigned to each compute unit
-    output reg [31:0] core_block_id [0:NUM_CORES-1],
+    output reg signed [31:0] core_block_id [0:NUM_CORES-1],
 
     output reg kernel_done
 );
@@ -33,6 +33,8 @@ reg [31:0] blocks_done; // number of blocks a core has finished processing
 wire [31:0] num_blocks;
 assign num_blocks = (num_threads + block_dim - 1) / block_dim; 
 
+localparam signed [31:0] INVALID_BLOCK_ID = -32'd1;
+
 integer i;
 always @ (posedge(clk)) begin
     if (rst) begin
@@ -41,9 +43,7 @@ always @ (posedge(clk)) begin
         kernel_done <= 0;
 
         for (i = 0; i < NUM_CORES; i = i + 1) begin
-            // TODO: they should be assigned a different default value since ZERO is a valid block id
-            // reset assigned block ids of each core to a default value (zero)
-            core_block_id[i] <= 0;
+            core_block_id[i] <= INVALID_BLOCK_ID;
             core_ready[i] <= 1;
             core_start[i] <= 0;      
         end        
@@ -71,7 +71,7 @@ always @ (posedge(clk)) begin
                 // check if a compute unit has finished its block and set it back to ready state
                 core_start[i] <= 0;
                 core_ready[i] <= 1;
-                // TODO: reset the core's block id
+                core_block_id[i] <= INVALID_BLOCK_ID;
                 blocks_done = blocks_done + 1;
             end
         end

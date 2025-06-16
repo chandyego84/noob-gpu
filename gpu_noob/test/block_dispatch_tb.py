@@ -9,14 +9,24 @@ BLOCK_DIM = 64
 def safe_int(val):
     try:
         v = int(val)
-        # Check for invalid/uninitialized values (all X or Z)
+
         if hasattr(val, 'is_resolvable') and not val.is_resolvable:
             return "X"
+        
         return v
         
     except Exception:
         return "X"
 
+def signed_int(val):
+    try:
+        if hasattr(val, 'signed_integer'):
+            return val.signed_integer
+        
+        return val            
+    
+    except Exception:
+        return "X"
 
 async def log_signals(dut):
     cycle = 0
@@ -46,7 +56,7 @@ async def log_signals(dut):
             dut._log.info(
                 f"  Core {i}: start={(dut.core_start[i].value)} "
                 f"core_ready={(dut.core_ready[i].value)} "
-                f"block_id={safe_int((dut.core_block_id[i].value))} "
+                f"block_id={signed_int(dut.core_block_id[i].value)} "
                 f"done={(dut.core_done[i].value)}"
             )
         cycle += 1
@@ -74,7 +84,7 @@ async def test_block_dispatch(dut):
 
     # test -- after rst, all blockIDs should be 0 and no blocks dispatched
     for i in range(int(dut.NUM_CORES.value)):
-        assert safe_int(dut.core_block_id[i].value) == 0, f"After reset, block_id for CU{i} should be 0"
+        assert signed_int(dut.core_block_id[i].value) == signed_int(dut.INVALID_BLOCK_ID), f"After reset, block_id for CU{i} should be {signed_int(dut.INVALID_BLOCK_ID)}"
     assert safe_int(dut.blocks_dispatched.value) == 0, "After reset, blocks_dispatched should be 0"
     assert safe_int(dut.blocks_done.value) == 0, "After reset, blocks_done should be 0"
     assert safe_int(dut.kernel_done.value) == 0, "After reset, kernel_done should be 0"
