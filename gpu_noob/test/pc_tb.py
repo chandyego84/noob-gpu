@@ -41,12 +41,12 @@ async def test_pc(dut):
     await RisingEdge(dut.clk)
 
     # Check reset behavior: all internal PCs should be 0
-    for i in range(5):  # NUM_WAVES = 5
+    for i in range(dut.WAVES_PER_SIMD.value):
         dut.active_context.value = i
         assert dut.pc_out.value == 0, f"Expected pc_out = 0 after reset for context {i}"
 
     # Test wave dispatch: set active_context and DISPATCH_NEW_WAVE
-    for i in range(5):
+    for i in range(dut.WAVES_PER_SIMD.value):
         dut.active_context.value = i
         dut.DISPATCH_NEW_WAVE.value = 1
         await RisingEdge(dut.clk)
@@ -54,7 +54,7 @@ async def test_pc(dut):
         assert dut.pc_out.value == 0, f"Expected pc_out = 0 after wave dispatch for context {i}"
 
     # Test PC update: set UPDATE_PC and check increment
-    for c in range(5):
+    for c in range(dut.WAVES_PER_SIMD.value):
         # switch to context c
         dut.active_context.value = c
         for i in range(3):  # increment PC 3 times per context
