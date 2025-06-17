@@ -48,8 +48,8 @@ assign num_blocks = (num_threads + block_dim - 1) / block_dim;
 wire [31:0] remainder;
 assign remainder = num_threads % block_dim;
 always @ (*) begin
-    if (core_block_id == num_blocks) begin
-        num_actual_block_threads = remainder;
+    if (core_block_id == (num_blocks - 1)) begin
+        num_actual_block_threads = (remainder == 0) ? block_dim : (block_dim - remainder);
     end
 
     else begin
