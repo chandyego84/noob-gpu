@@ -4,7 +4,7 @@
 // No branching implemented
 module PC #(
     parameter PROGRAM_MEM_ADDR_WIDTH = 32, // program memory addresses are 32b, though actual address space is much smaller
-    parameter WAVES_PER_SIMD = 5 // max number of waves/SIMD 
+    parameter WAVES_PER_SIMD = 1 // max number of waves/SIMD 
 )
 (
     input wire clk,
