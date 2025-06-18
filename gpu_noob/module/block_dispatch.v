@@ -58,12 +58,11 @@ always @ (posedge(clk)) begin
 
         for (i = 0; i < NUM_CORES; i = i + 1) begin
             if (core_ready[i] && !core_start[i]) begin
-                core_ready[i] <= 0;
-
                 // check if there is a block that can be given
                 if (blocks_dispatched < num_blocks) begin
                     core_block_id[i] <= blocks_dispatched; // give a block to a core
                     core_start[i] <= 1;
+                    core_ready[i] <= 0;
                     blocks_dispatched = blocks_dispatched + 1; 
                 end
             end

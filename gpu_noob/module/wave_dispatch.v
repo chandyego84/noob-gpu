@@ -1,6 +1,5 @@
 `timescale 1ns/1ps
-// Compute Unit
-    // Wavedispatcher --> 2 SIMDs (wavedispatcher holds up to one block)
+// Wavedispatcher --> 2 SIMDs (wavedispatcher holds up to one block)
 // Dispatches waves to SIMDs in a compute unit
     // Track which SIMDs are ready to accept a new wavefront
     // Dispatch a new wave to a SIMD when it is available
@@ -24,9 +23,9 @@ module WaveDispatch #(
     
     input wire signed [31:0] core_block_id, // assigned block_id for corresponding CU
     
-    input wire [NUM_SIMDS-1:0] simd_done, // SIMD signals for completing a wave
+    input wire [NUM_SIMDS-1:0] simd_done, // SIMD signals for SIMD completing a wave
 
-    output reg [NUM_SIMDS-1:0] simd_start, // high for when new wave assigned to a SIMD
+    output reg [NUM_SIMDS-1:0] simd_start, // high for when new wave given to SIMD to start working on
     output reg [NUM_SIMDS-1:0] simd_ready, // high for when SIMD can take a new wave
 
     output reg signed [31:0] simd_wave_id [0:NUM_SIMDS-1], // wave_id for a SIMD
@@ -34,11 +33,12 @@ module WaveDispatch #(
     output reg block_done // signal for when all warps are processed (current block is done)
 );
 
+localparam signed [31:0] INVALID_WAVE_ID = -32'd1;
+
 // internal states
 reg [31:0] waves_dispatched; 
 reg [31:0] waves_done;
 reg [31:0] num_actual_block_threads; // num of threads in current block
-wire [31:0] num_waves; // num of waves in current block
 
 wire [31:0] num_blocks;
 assign num_blocks = (num_threads + block_dim - 1) / block_dim;
@@ -58,9 +58,8 @@ always @ (*) begin
 end
 
 // how many waves in the current block -- depends on number of actual threads on the current block
+wire [31:0] num_waves; // num of waves in current block
 assign num_waves = (num_actual_block_threads + WAVE_SIZE - 1) / WAVE_SIZE;
-
-localparam signed [31:0] INVALID_WAVE_ID = -32'd1;
 
 integer i;
 always @ (posedge(clk)) begin
@@ -86,14 +85,11 @@ always @ (posedge(clk)) begin
         else begin
             for (i = 0; i < NUM_SIMDS; i = i + 1) begin
                 // check for ready SIMD units to be given waves
-                if (simd_ready[i] && !simd_start[i]) begin
-                    // check if there is a wave that can be given
-                    if (waves_dispatched < num_waves) begin
-                        simd_wave_id[i] <= waves_dispatched;
-                        simd_start[i] <= 1;
-                        simd_ready[i] <= 0;
-                        waves_dispatched = waves_dispatched + 1;           
-                    end
+                if ((waves_dispatched < num_waves) && simd_ready[i] && !simd_start[i]) begin
+                    simd_wave_id[i] <= waves_dispatched;
+                    simd_start[i] <= 1;
+                    simd_ready[i] <= 0;
+                    waves_dispatched = waves_dispatched + 1;                               
                 end
 
                 if (simd_done[i] && simd_start[i]) begin

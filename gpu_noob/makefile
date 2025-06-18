@@ -12,8 +12,8 @@ TOPLEVEL_LANG ?= verilog
 #############################################
 # ---- Design and Testbench Configuration ----
 # MODIFY DUT and TESTBENCH args to test other modules
-DUT ?= WaveDispatch
-TESTBENCH ?= wave_dispatch_tb
+DUT ?= PC
+TESTBENCH ?= pc_tb
 #############################################
 # ---- Source and Testbench Paths ----
 # List all Verilog source files needed for simulation, including submodules
