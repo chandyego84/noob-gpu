@@ -53,6 +53,7 @@ async def log_signals(dut):
                 f"  SIMD {i}: wave_id={signed_int(dut.simd_wave_id[i].value)} "
                 f"start={safe_int(dut.simd_start[i].value)} "
                 f"simd_ready={safe_int(dut.simd_ready[i].value)} "
+                f"simd_working={safe_int(dut.simd_working[i].value)} "
                 f"done={safe_int(dut.simd_done[i].value)}"
             )
         cycle += 1
@@ -95,8 +96,17 @@ async def test_full_block_wave_dispatch(dut):
         exp_wave_id = i
         act_warp_id = signed_int(dut.simd_wave_id[i].value)
         assert act_warp_id == exp_wave_id, f"After enable=1, SIMD {i} should have warp_id {exp_wave_id}, got {act_warp_id}"
-        act_start_state = safe_int(dut.simd_start[i].value)
-        assert act_start_state == 1, f"For SIMD {i}: With warp_id {act_warp_id}, start_state should be 1, got {act_start_state}"
+        act_working_state = safe_int(dut.simd_working[i].value)
+        assert act_working_state == 1, f"For SIMD {i}: With warp_id {act_warp_id}, working_state should be 1, got {act_working_state}"
+        # SIMD start states should be HIGH as they were just given new waves
+        expected = 1
+        actual = safe_int(dut.simd_start[i].value)
+        assert expected == actual, f"For SIMD {i}: With warp_id {act_warp_id}, start_state should be 1, got {actual}"
+    
+    # let SIMDs work for a while
+    for i in range(5):
+        await RisingEdge(dut.clk)
+        dut._log.info(f"SIMDs are working, STEP={i}")
 
     # test -- SIMD0 finishes its wave
     dut.simd_done[0].value = 1
@@ -171,6 +181,21 @@ async def test_half_full_block_wave_dispatch(dut):
     exp_wave_id = signed_int(dut.INVALID_WAVE_ID.value)
     act_wave_id = signed_int(dut.simd_wave_id[1].value) # SIMD1 wave id
     assert act_wave_id == exp_wave_id, f"After enable=1, SIMD 1 should have warp_id {exp_wave_id}, got {act_wave_id}"
+    # test -- SIMD0 was assigned a new wave, SIMD1 wasn't.
+        # check start_states
+    # SIMD0
+    expected = 1
+    actual = safe_int(dut.simd_start[0].value)
+    assert expected == actual, f"SIMD0 was given new wave, start_state should be 1, got {actual}"
+    # SIMD1
+    expected = 0
+    actual = safe_int(dut.simd_start[1].value)
+    assert expected == actual, f"SIMD1 wasn't given a wave, start_state should be 0, got {actual}"
+    
+    # let SIMDs work for a while
+    for i in range(5):
+        await RisingEdge(dut.clk)
+        dut._log.info(f"SIMDs are working, STEP={i}")
 
     # test -- SIMD0 finishes its wave
     dut.simd_done[0].value = 1
