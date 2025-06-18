@@ -25,9 +25,9 @@ module WaveDispatch #(
     
     input wire [NUM_SIMDS-1:0] simd_done, // SIMD signals for SIMD completing a wave
 
-    output reg [NUM_SIMDS-1:0] simd_start, // high for when new wave given to SIMD to start working on
+    output reg [NUM_SIMDS-1:0] simd_working, // high for when SIMD has started executing on wave
     output reg [NUM_SIMDS-1:0] simd_ready, // high for when SIMD can take a new wave
-
+    output reg [NUM_SIMDS-1:0] simd_start, // SIMD signals for when a new wave was just assigned to it
     output reg signed [31:0] simd_wave_id [0:NUM_SIMDS-1], // wave_id for a SIMD
 
     output reg block_done // signal for when all warps are processed (current block is done)
@@ -73,6 +73,7 @@ always @ (posedge(clk)) begin
             simd_wave_id[i] <= INVALID_WAVE_ID;
             simd_ready[i] <= 1;
             simd_start[i] <= 0;
+            simd_working[i] <= 0;
         end
     end
 
@@ -84,16 +85,23 @@ always @ (posedge(clk)) begin
 
         else begin
             for (i = 0; i < NUM_SIMDS; i = i + 1) begin
-                // check for ready SIMD units to be given waves
-                if ((waves_dispatched < num_waves) && simd_ready[i] && !simd_start[i]) begin
+                // check if SIMD unit can be given a wave
+                if ((waves_dispatched < num_waves) && simd_ready[i] && !simd_working[i]) begin
                     simd_wave_id[i] <= waves_dispatched;
                     simd_start[i] <= 1;
+                    simd_working[i] <= 1;
                     simd_ready[i] <= 0;
                     waves_dispatched = waves_dispatched + 1;                               
                 end
+                
+                else begin
+                    // SIMD not assigned a new wave
+                    simd_start[i] <= 0;
+                end
 
-                if (simd_done[i] && simd_start[i]) begin
+                if (simd_done[i] && simd_working[i]) begin  
                     // check if a simd finished processing its wave and set it back to ready
+                    simd_working[i] <= 0;
                     simd_start[i] <= 0;
                     simd_ready[i] <= 1;
                     simd_wave_id[i] <= INVALID_WAVE_ID;
