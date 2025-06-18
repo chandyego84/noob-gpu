@@ -4,24 +4,10 @@ from cocotb.triggers import RisingEdge, Timer
 from cocotb.utils import get_sim_time
 from common import safe_int, signed_int
 
-async def log_signals(dut):
-    signals = {
-        "clk": dut.clk,
-        "rst": dut.rst,
-        "DISPATCH_NEW_WAVE": dut.DISPATCH_NEW_WAVE,
-        "active_context": dut.active_context,
-        "UPDATE_PC": dut.UPDATE_PC,
-        "pc_out": dut.pc_out
-    }
-    cycle = 0
+async def pc_in_wire(dut):
     while True:
         await RisingEdge(dut.clk)
-        log_entries = []
-        for name, sig in signals.items():
-                log_entries.append(f"{name}={sig.value}")
-        log_line = f"Cycle {cycle}: " + " | ".join(log_entries)
-        dut._log.info(log_line)
-        cycle += 1
+        dut.pc_in.value = dut.pc_out.value
 
 async def log_signals(dut):
     cycle = 0
@@ -55,6 +41,7 @@ async def test_pc(dut):
     # Start the clock (100 MHz)
     clock = Clock(dut.clk, 10, units="ns")  # 10ns period = 100 MHz
     cocotb.start_soon(clock.start())
+    cocotb.start_soon(pc_in_wire(dut))
     cocotb.start_soon(log_signals(dut))
 
     # Initial reset
@@ -71,23 +58,36 @@ async def test_pc(dut):
     actual = safe_int(dut.pc_out.value)
     assert expected == actual, f"On RST, pc_out should be {expected}, got {actual}"
 
-    '''
-    # Test wave dispatch: set active_context and DISPATCH_NEW_WAVE
-    for i in range(dut.WAVES_PER_SIMD.value):
-        dut.active_context.value = i
-        dut.DISPATCH_NEW_WAVE.value = 1
-        await RisingEdge(dut.clk)
-        dut.DISPATCH_NEW_WAVE.value = 0
-        assert dut.pc_out.value == 0, f"Expected pc_out = 0 after wave dispatch for context {i}"
-
-    # Test PC update: set UPDATE_PC and check increment
-    for c in range(dut.WAVES_PER_SIMD.value):
-        # switch to context c
-        dut.active_context.value = c
-        for i in range(3):  # increment PC 3 times per context
-            dut.UPDATE_PC.value = 1
-            await RisingEdge(dut.clk)
-            dut.UPDATE_PC.value = 0
-            await RisingEdge(dut.clk)
-            assert dut.pc_out.value == i + 1, f"Expected pc_out = {i + 1}, Actual pc_out = {dut.pc_out.value} for C{c}"
-    '''
+    # test -- dispatch new wave
+    dut.DISPATCH_NEW_WAVE.value = 1
+    await RisingEdge(dut.clk) # new wave signal updated
+    dut.DISPATCH_NEW_WAVE.value = 0
+    await RisingEdge(dut.clk) # new wave signal processed
+    # pc out
+    expected = 0
+    actual = safe_int(dut.pc_out.value)
+    assert expected == actual, f"New wave dispatched, pc_out should be {expected}, got {actual}"
+    expected = 0
+    actual = safe_int(dut.pc_in.value)
+    assert expected == actual, f"New wave dispatched, pc_in should be {expected}, got {actual}"
+    
+    # test -- update pc (arbitrary amount of PC updates)
+    dut.UPDATE_PC.value = 1
+    for i in range(1, 5):
+        await RisingEdge(dut.clk) # update_pc signal updated
+        await RisingEdge(dut.clk) # signal processed
+        expected = i
+        actual = safe_int(dut.pc_out.value)
+        assert expected == actual, f"Update {i}: pc_out expected = {expected}, got {actual}"
+    
+    # test -- assuming SIMD finished current wave, then  
+    #  new wave dispatched (reset PC to 0)
+    dut.UPDATE_PC.value = 0
+    dut.DISPATCH_NEW_WAVE.value = 1
+    await RisingEdge(dut.clk) # signals updated
+    dut.DISPATCH_NEW_WAVE.value = 0
+    await RisingEdge(dut.clk) # signals processed
+    expected = 0
+    actual = safe_int(dut.pc_out.value)
+    assert expected == actual, f"New wave dispatched, pc_out expected = {expected}, got {actual}"
+    await RisingEdge(dut.clk)

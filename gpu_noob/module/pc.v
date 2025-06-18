@@ -28,16 +28,10 @@ always @ (posedge(clk)) begin
     else begin
         if (enable) begin
             if (DISPATCH_NEW_WAVE) begin
-                // new wave dispatched, set back to 0
                 pc_out <= 0;
             end 
 
             else if (UPDATE_PC) begin
-                pc_out <= pc_in + 1;
-            end
-
-            else begin
-                // default is to simply update pc
                 pc_out <= pc_in + 1;
             end
         end
