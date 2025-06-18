@@ -69,13 +69,10 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
 - ### Compute Unit (x4)
     - Wavefront Dispatcher - dispatches wavefronts (64 threads/wave) to SIMD units 
         - Considers a wave from one of the SIMD units for execution, selected in a round-robin fashion between SIMDs
-        - Issues up to one instruction per wavefront on the selected SIMD
+    - Instruction Fetch - fetches instructions from memory into SIMD units
     - Instruction Decoder - breaks down an instruction into opcode, source/destination registers, immediate, etc.
-    - ###  SIMD Unit (x4/CU)
+    - ###  SIMD Unit (x2/CU)
         - Holds up to one wavefront at a time
-        - Instruction Buffer
-            - Holds decoded instructions for one wavefront
-            - For just one wavefront/SIMD, this is unnecessary, but it is effective if more wavefronts per SIMD are added in the future.
         - Program Counter
         - ALU (16 lanes)
         - Load/Store Unit (16)
