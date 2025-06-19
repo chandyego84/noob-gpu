@@ -107,9 +107,9 @@ Instructions have this format: | opcode: 6b | Rd: 7b | Rm: 7b | Rn: 7b | Other: 
 
 ## Registers
 Each SIMD lane has 64 bits x 32 registers.  
-```R0```: zero  
-```R1-R3```: %blockIdx, %blockDim, and %threadIdx respectively  
-```R4-R31```: general purpose data
+```R0-R27```: general purpose data  
+```R28-R30```: %blockIdx, %blockDim, and %threadIdx respectively  
+```R31```: zero
 
 **Important parameters**:  
 - ```%blockIdx```: block's ID within a block grid (0 through numberOfBlocks-1)
