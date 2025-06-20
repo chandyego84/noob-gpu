@@ -23,11 +23,14 @@ module WaveDispatch #(
     
     input wire signed [31:0] core_block_id, // assigned block_id for corresponding CU
     
+    // -- SIMD wave dispatch states -- START
     input wire [NUM_SIMDS-1:0] simd_done, // SIMD signals for SIMD completing a wave
 
     output reg [NUM_SIMDS-1:0] simd_working, // high for when SIMD has started executing on wave
     output reg [NUM_SIMDS-1:0] simd_ready, // high for when SIMD can take a new wave
     output reg [NUM_SIMDS-1:0] simd_start, // SIMD signals for when a new wave was just assigned to it
+    // -- SIMD wave dispatch states -- END
+
     output reg signed [31:0] simd_wave_id [0:NUM_SIMDS-1], // wave_id for a SIMD
 
     output reg block_done // signal for when all warps are processed (current block is done)
