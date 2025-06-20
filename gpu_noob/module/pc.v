@@ -13,7 +13,7 @@ module PC #(
     input wire enable,
 
     // signals
-    input wire UPDATE_PC, // signal to update current wavefront's PC
+    input wire [2:0] simd_state,
     input wire DISPATCH_NEW_WAVE, // signal to indicate a new wave was dispatched to SIMD unit
 
     input wire [PROGRAM_MEM_ADDR_WIDTH-1:0] pc_in,
@@ -28,10 +28,12 @@ always @ (posedge(clk)) begin
     else begin
         if (enable) begin
             if (DISPATCH_NEW_WAVE) begin
+                // new wave -- reset PC
                 pc_out <= 0;
             end 
 
-            else if (UPDATE_PC) begin
+            else if (simd_state == 3'b101) begin
+                // SIMD state: EXECUTE -- compute next PC
                 pc_out <= pc_in + 1;
             end
         end
