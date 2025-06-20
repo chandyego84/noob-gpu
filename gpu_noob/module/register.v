@@ -66,7 +66,7 @@ always @ (block_id, block_dim, thread_id_x) begin
 end
 
 integer i;
-always @ (posedege(clk)) begin
+always @ (posedge(clk)) begin
     if (rst) begin
         // initialize read-only registers
         reg_file[28] <= block_id;
@@ -94,7 +94,7 @@ always @ (posedege(clk)) begin
 
             // if REG_WRITE enabled and SIMD state == UPDATE
             // writing only allowed to general purpose registers
-            if (REG_WRITE && simd_state == 3'b110 && rd > 3) begin
+            if (REG_WRITE && simd_state == 3'b110 && rd < 28) begin
                 reg_file[rd] = write_data;
             end
 
