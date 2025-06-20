@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 /*
 --------------------------------------
 Register File (4 KB)
@@ -17,10 +18,11 @@ blockDim: number of threads per block
 threadIdx: thread's ID within a block
 */
 module RegisterFile # (
-    parameter THREAD_ID_X = 0, // unique for each lane
     parameter DATA_REG_ADDR_WIDTH = 7, 
     parameter DATA_WIDTH = 64,
     parameter NUM_REGISTERS = 32,
+    parameter WAVE_SIZE = 32,
+    parameter LANE_WIDTH = 16
 )
 (
     input wire clk,
@@ -29,11 +31,16 @@ module RegisterFile # (
 
     // kernel metadata
     input wire signed [31:0] block_id,
+    input wire  signed [31:0] wave_id,
     input wire [31:0] block_dim,
+
+    input wire [$clog2((WAVE_SIZE + LANE_WIDTH - 1) / LANE_WIDTH)] curr_wave_cycle,
+    input wire [$clog2(LANE_WIDTH-1):0] lane_id, // corresponding SIMD lane the reg_file is associated with
 
     // signals
     input wire REG_WRITE,
-    
+    input wire [2:0] simd_state,
+
     // registers
     input wire [DATA_REG_ADDR_WIDTH-1:0] rm,
     input wire [DATA_REG_ADDR_WIDTH-1:0] rn,
@@ -49,13 +56,22 @@ module RegisterFile # (
 
 reg [DATA_WIDTH-1:0] reg_file [NUM_REGISTERS-1:0];
 
+wire [31:0] thread_id_x;
+assign thread_id_x = wave_id * WAVE_SIZE + (curr_wave_cycle * LANE_WIDTH + lane_id);
+
+always @ (block_id, block_dim, thread_id_x) begin
+    reg_file[28] <= block_id;
+    reg_file[29] <= block_dim;
+    reg_file[30] <= thread_id_x;
+end
+
 integer i;
 always @ (posedege(clk)) begin
     if (rst) begin
         // initialize read-only registers
         reg_file[28] <= block_id;
         reg_file[29] <= block_dim;
-        reg_file[30] <= THREAD_ID_X;
+        reg_file[30] <= thread_id_x;
         reg_file[31] <= 0;
         
         for (i = 0; i < 28; i = i + 1) begin
@@ -70,11 +86,15 @@ always @ (posedege(clk)) begin
 
     else begin
         if (enable) begin
-            rm_data <= reg_file[rm];
-            rn_data <= reg_file[rn];
+            // if SIMD state == REQUEST
+            if (simd_state == 3'b011) begin
+                rm_data <= reg_file[rm];
+                rn_data <= reg_file[rn];
+            end
 
-             // writing only allowed to general purpose registers
-            if (REG_WRITE && rd > 3) begin
+            // if REG_WRITE enabled and SIMD state == UPDATE
+            // writing only allowed to general purpose registers
+            if (REG_WRITE && simd_state == 3'b110 && rd > 3) begin
                 reg_file[rd] = write_data;
             end
 
