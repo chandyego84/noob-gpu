@@ -104,7 +104,7 @@ Instructions have this format: | opcode: 6b | Rd: 7b | Rm: 7b | Rn: 7b | Other: 
 | AND | AND rd, rm, rn | 000101 | Rd = Rm bitwise_AND Rn
 | ORR | ORR rd, rm, rn | 000110 | Rd = Rm  bitwise_OR Rn
 | CONST | CONST rd, imm_19 | 000111 | Rd = imm_19 (imm_19 = Rd_Rm_Rn_Other)
-| RET | kernel done | 111111 | 111111 x...x 
+| RET | thread done | 111111 | 111111 x...x 
 ## Registers
 Each SIMD lane has 64 bits x 32 registers.  
 ```R0-R27```: general purpose data  
