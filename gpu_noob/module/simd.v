@@ -125,7 +125,6 @@ Fetcher fetcher (
     .instruction(instruction)
 );
 
-
 // TODO: SIMD Controller
 
 genvar i;
