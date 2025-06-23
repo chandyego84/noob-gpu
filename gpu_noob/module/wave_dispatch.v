@@ -1,4 +1,6 @@
 `timescale 1ns/1ps
+`include "common_defs.v"
+
 // Wavedispatcher --> 2 SIMDs (wavedispatcher holds up to one block)
 // Dispatches waves to SIMDs in a compute unit
     // Track which SIMDs are ready to accept a new wavefront

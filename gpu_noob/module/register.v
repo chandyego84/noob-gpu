@@ -1,4 +1,6 @@
 `timescale 1ns/1ps
+`include "common_defs.v"
+
 /*
 --------------------------------------
 Register File (4 KB)
@@ -47,7 +49,7 @@ module RegisterFile # (
     input wire [DATA_REG_ADDR_WIDTH-1:0] rd,
 
     // write data -- from ALU or memory
-    input wire [DATA_WIDTH-1:0] write_data, 
+    input wire [DATA_WIDTH-1:0] reg_write_data, 
 
     // reading data from registers
     output reg [DATA_WIDTH-1:0] rm_data,
@@ -87,15 +89,15 @@ always @ (posedge(clk)) begin
     else begin
         if (enable) begin
             // if SIMD state == REQUEST
-            if (simd_state == 3'b011) begin
+            if (simd_state == `SIMD_REQUEST) begin
                 rm_data <= reg_file[rm];
                 rn_data <= reg_file[rn];
             end
 
             // if REG_WRITE enabled and SIMD state == UPDATE
             // writing only allowed to general purpose registers
-            if (REG_WRITE && simd_state == 3'b110 && rd < 28) begin
-                reg_file[rd] = write_data;
+            if (REG_WRITE && simd_state == `SIMD_UPDATE && rd < 28) begin
+                reg_file[rd] = reg_write_data;
             end
 
         end

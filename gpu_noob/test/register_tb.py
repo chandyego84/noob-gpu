@@ -77,7 +77,7 @@ async def test_register_file(dut):
     dut.simd_state.value = 0b110  # UPDATE state
     dut.rd.value = 4
     test_val = 12345
-    dut.write_data.value = test_val
+    dut.reg_write_data.value = test_val
     await RisingEdge(dut.clk)
     dut.REG_WRITE.value = 0
     await RisingEdge(dut.clk)
@@ -88,7 +88,7 @@ async def test_register_file(dut):
     dut.REG_WRITE.value = 1
     dut.simd_state.value = 0b110  # UPDATE state
     dut.rd.value = 28
-    dut.write_data.value = 99999
+    dut.reg_write_data.value = 99999
     await RisingEdge(dut.clk)
     dut.REG_WRITE.value = 0
     await RisingEdge(dut.clk)
@@ -109,7 +109,7 @@ async def test_register_file(dut):
     dut.REG_WRITE.value = 1
     dut.simd_state.value = 0b110
     dut.rd.value = 31
-    dut.write_data.value = 55555
+    dut.reg_write_data.value = 55555
     await RisingEdge(dut.clk)
     dut.REG_WRITE.value = 0
     await RisingEdge(dut.clk)

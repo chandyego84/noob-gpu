@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+`include "common_defs.v"
 
 // Dispatches thread blocks to compute units
 // Assumes
