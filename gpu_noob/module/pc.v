@@ -33,8 +33,8 @@ always @ (posedge(clk)) begin
                 pc_out <= 0;
             end 
 
-            else if (simd_state == 3'b101) begin
-                // SIMD state: EXECUTE -- compute next PC
+            else if (simd_state == `SIMD_EXECUTE) begin
+                // compute next PC
                 pc_out <= pc_in + 1;
             end
         end
