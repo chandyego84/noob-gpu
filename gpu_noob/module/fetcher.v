@@ -10,8 +10,8 @@ Instruction Fetcher
 */
 
 module Fetcher # (
-    parameter PROGRAM_MEM_ADDR_WIDTH = 32,
-    parameter DATA_WIDTH = 64
+    parameter PROGRAM_MEM_ADDR_WIDTH = 6,
+    parameter INSTRUCTION_WIDTH = 32
 )
 (
     input wire clk,
@@ -24,13 +24,13 @@ module Fetcher # (
 
     // From program memory
     input wire prog_mem_read_ack,
-    input wire [DATA_WIDTH-1:0] prog_mem_read_data,
+    input wire [INSTRUCTION_WIDTH-1:0] prog_mem_read_data,
 
     // Outputs
     output reg prog_mem_read_valid,
     output reg [PROGRAM_MEM_ADDR_WIDTH-1:0] prog_mem_addr,
     output reg [2:0] fetcher_state,
-    output reg [DATA_WIDTH-1:0] instruction
+    output reg [INSTRUCTION_WIDTH-1:0] instruction
 );
 
 always @ (posedge(clk)) begin

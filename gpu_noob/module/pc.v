@@ -6,7 +6,7 @@
 // Assumptions:
     // Only up to 1 wave per SIMD
 module PC #(
-    parameter PROGRAM_MEM_ADDR_WIDTH = 32 // program memory addresses are 32b, though actual address space is much smaller
+    parameter PROGRAM_MEM_ADDR_WIDTH = 6 // program memory addresses are 32b, though actual address space is much smaller
 )
 (
     input wire clk,

@@ -18,7 +18,8 @@ threadId.x = wave_id * wave_size + (warp_cycle * SIMD_width + lane_id)
 */
 module SIMD #(
     parameter DATA_WIDTH = 64,
-    parameter PROGRAM_MEM_ADDR_WIDTH = 32,
+    parameter INSTRUCTION_WIDTH = 32,
+    parameter PROGRAM_MEM_ADDR_WIDTH = 6,
     parameter DATA_REG_ADDR_WIDTH = 7,
     parameter LANE_WIDTH = 16,
     parameter WAVE_SIZE = 32
@@ -32,14 +33,10 @@ module SIMD #(
     input wire [31:0] num_threads, // num of total threads -- defined by kernel
     input wire [31:0] block_dim, // num of threads per block -- defined by kernel 
 
+    // block and wave info
     input wire signed [31:0] block_id, // assigned block_id from block dispatcher
     input wire signed [31:0] wave_id, // assigned wave_id from wave dispatcher
     input wire [31:0] num_waves_in_block, // num of waves in current block of CU -- calculated by wave dispatcher
-
-    // data memory signals
-    input wire [LANE_WIDTH-1:0] data_mem_ready_ack,
-    input wire [LANE_WIDTH-1:0] data_mem_write_ack,
-    input wire [DATA_WIDTH-1:0] mem_read_data [LANE_WIDTH-1:0],
 
     // simd wave dispatch states
     input wire simd_ready, 
@@ -47,11 +44,24 @@ module SIMD #(
     input wire simd_working, 
     output reg simd_done,
 
-    output reg [PROGRAM_MEM_ADDR_WIDTH-1:0] pc_out,
+    // data memory feedback
+    input wire [LANE_WIDTH-1:0] data_mem_ready_ack,
+    input wire [LANE_WIDTH-1:0] data_mem_write_ack,
+    input wire [DATA_WIDTH-1:0] mem_read_data [LANE_WIDTH-1:0],
+
+    // program memory feedback
+    input wire prog_mem_read_ack,
+    input wire [INSTRUCTION_WIDTH-1:0] prog_mem_read_data,
+
+    // data memory outputs
     output reg [LANE_WIDTH-1:0] mem_read_valid,
     output reg [LANE_WIDTH-1:0] mem_write_valid,
     output reg [DATA_REG_ADDR_WIDTH-1:0] mem_addr [LANE_WIDTH-1:0],
-    output reg [DATA_WIDTH-1:0] mem_write_data [LANE_WIDTH-1:0]
+    output reg [DATA_WIDTH-1:0] mem_write_data [LANE_WIDTH-1:0],
+
+    // program memory outputs
+    output reg prog_mem_read_valid,
+    output reg [PROGRAM_MEM_ADDR_WIDTH-1:0] prog_mem_addr
 );
 
 // -- START Shared States -- 
@@ -60,6 +70,7 @@ reg [2:0] fetcher_state;
 /* WAVE CYCLE LOGIC */
 localparam TOTAL_WAVE_CYCLES = (WAVE_SIZE + LANE_WIDTH - 1) / LANE_WIDTH;
 reg [$clog2(TOTAL_WAVE_CYCLES)-1:0] curr_wave_cycle;
+reg [INSTRUCTION_WIDTH-1:0] instruction;
 // -- END Shared States --
 
 // -- START Registers --
@@ -98,6 +109,22 @@ PC#(.PROGRAM_MEM_ADDR_WIDTH(PROGRAM_MEM_ADDR_WIDTH)) pc (
     .pc_in(curr_pc),
     .pc_out(pc_out)
 );
+
+Fetcher fetcher (
+    .clk(clk),
+    .rst(rst),
+    .enable(enable),
+    .simd_state(simd_state),
+    .curr_pc(curr_pc),
+    .prog_mem_read_ack(prog_mem_read_ack),
+    .prog_mem_read_data(prog_mem_read_data),
+
+    .prog_mem_read_valid(prog_mem_read_valid),
+    .prog_mem_addr(prog_mem_addr),
+    .fetcher_state(fetcher_state),
+    .instruction(instruction)
+);
+
 
 // TODO: SIMD Controller
 
@@ -138,8 +165,7 @@ generate
 
             .mem_read_valid(mem_read_valid[i]),
             .mem_write_valid(mem_write_valid[i]),
-            .mem_read_addr(mem_read_addr[i]),
-            .mem_write_addr(mem_write_addr[i]),
+            .mem_addr(mem_addr[i]),
             .mem_write_data(mem_write_data[i]),
             .lsu_state(lsu_state[i]),
             .lsu_read_out(lsu_read_out[i])
