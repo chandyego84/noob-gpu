@@ -52,7 +52,7 @@ module LSU # (
 
 always @ (posedge(clk)) begin
     if (rst) begin
-        lsu_state <= LSU_IDLE;
+        lsu_state <= `LSU_IDLE;
         lsu_read_out <= 0;
         // data mem outputs
         mem_read_valid <= 0;

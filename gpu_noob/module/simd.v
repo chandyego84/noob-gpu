@@ -107,15 +107,15 @@ wire RET; // instruction signaling end of thread execution
 // -- END Signals --
 
 // -- START PC --
-wire curr_pc = pc_out; // TODO: PC_OUT should be set by SIMD controller
-wire DISPATCH_NEW_WAVE = simd_start; 
+wire [PROGRAM_MEM_ADDR_WIDTH-1:0] curr_pc; // current pc
+wire [PROGRAM_MEM_ADDR_WIDTH-1:0] pc_out; // calculated next pc
 // -- END PC --
 
 PC#(.PROGRAM_MEM_ADDR_WIDTH(PROGRAM_MEM_ADDR_WIDTH)) pc (
     .clk(clk),
     .rst(rst),
     .simd_state(simd_state),
-    .DISPATCH_NEW_WAVE(DISPATCH_NEW_WAVE),
+    .DISPATCH_NEW_WAVE(simd_start),
     .pc_in(curr_pc),
     .pc_out(pc_out)
 );
@@ -154,8 +154,22 @@ Decoder decoder (
     .imm_19(imm_19)
 );
 
+SimdController # (.TOTAL_WAVE_CYCLES(TOTAL_WAVE_CYCLES))
+    simdController (
+        .clk(clk),
+        .rst(rst),
+        .enable(enable),
+        .simd_start(simd_start),
+        .RET(RET),
+        .fetcher_state(fetcher_state),
+        .lsu_state(lsu_state),
+        .pc_out(pc_out),
 
-// TODO: SIMD Controller
+        .curr_pc(curr_pc),
+        .curr_wave_cycle(curr_wave_cycle),
+        .simd_state(simd_state),
+        .simd_done(simd_done)
+);
 
 // reg_write_data depends on REG_WRITE_MUX
 always @(*) begin
