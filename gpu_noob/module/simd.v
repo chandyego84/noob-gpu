@@ -65,45 +65,45 @@ module SIMD #(
 );
 
 // -- START Shared States -- 
-reg [2:0] simd_state;
-reg [2:0] fetcher_state;
+wire [2:0] simd_state;
+wire [2:0] fetcher_state;
 /* WAVE CYCLE LOGIC */
 localparam TOTAL_WAVE_CYCLES = (WAVE_SIZE + LANE_WIDTH - 1) / LANE_WIDTH;
-reg [$clog2(TOTAL_WAVE_CYCLES)-1:0] curr_wave_cycle;
-reg [INSTRUCTION_WIDTH-1:0] instruction;
+wire [$clog2(TOTAL_WAVE_CYCLES)-1:0] curr_wave_cycle;
+wire [INSTRUCTION_WIDTH-1:0] instruction;
 // -- END Shared States --
 
 // -- START Registers --
 // inputs -- come from instruction; same for each lane
-reg [DATA_REG_ADDR_WIDTH-1:0] rd;
-reg [DATA_REG_ADDR_WIDTH-1:0] rm;
-reg [DATA_REG_ADDR_WIDTH-1:0] rn;
+wire [DATA_REG_ADDR_WIDTH-1:0] rd;
+wire [DATA_REG_ADDR_WIDTH-1:0] rm;
+wire [DATA_REG_ADDR_WIDTH-1:0] rn;
 // outputs
-reg [DATA_WIDTH-1:0] rm_data [LANE_WIDTH-1:0];
-reg [DATA_WIDTH-1:0] rn_data [LANE_WIDTH-1:0];
-reg [DATA_WIDTH-1:0] reg_write_data [LANE_WIDTH-1:0];
+wire [DATA_WIDTH-1:0] rm_data [LANE_WIDTH-1:0];
+wire [DATA_WIDTH-1:0] rn_data [LANE_WIDTH-1:0];
+wire [DATA_WIDTH-1:0] reg_write_data [LANE_WIDTH-1:0];
 // -- END Registers --
 
 // -- REG_WRITE POSSIBLE VALUES
 // lsu_read_out
-reg [DATA_WIDTH-1:0] alu_out [LANE_WIDTH-1:0];
-reg [18:0] imm_19;
+wire [DATA_WIDTH-1:0] alu_out [LANE_WIDTH-1:0];
+wire [18:0] imm_19;
 
 // -- START LSU --
-reg [1:0] lsu_state [LANE_WIDTH-1:0];
-reg [DATA_WIDTH-1:0] lsu_read_out[LANE_WIDTH-1:0];
+wire [1:0] lsu_state [LANE_WIDTH-1:0];
+wire [DATA_WIDTH-1:0] lsu_read_out[LANE_WIDTH-1:0];
 // -- END LSU --
 
 // -- START ALU --
-reg [2:0] alu_op;
+wire [2:0] alu_op;
 // -- END ALU --
 
 // -- START Signals -- 
-reg REG_WRITE; // enable write to reg_file
-reg MEM_READ; // enable read from data memory
-reg MEM_WRITE; // enable write to data memory
-reg REG_WRITE_MUX; // selects what data to write into register file
-reg RET; // instruction signaling end of thread execution
+wire REG_WRITE; // enable write to reg_file
+wire MEM_READ; // enable read from data memory
+wire MEM_WRITE; // enable write to data memory
+wire REG_WRITE_MUX; // selects what data to write into register file
+wire RET; // instruction signaling end of thread execution
 // -- END Signals --
 
 // -- START PC --
@@ -142,16 +142,16 @@ Decoder decoder (
     .simd_state(simd_state),
     .instruction(instruction),
 
-    REG_WRITE(REG_WRITE),
-    MEM_READ(MEM_READ),
-    MEM_WRITE(MEM_WRITE),
-    REG_WRITE_MUX(REG_WRITE_MUX),
-    RET(RET),
-    alu_op(alu_op),
-    rd(rd),
-    rm(rm),
-    rn(rn),
-    imm_19(imm_19)
+    .REG_WRITE(REG_WRITE),
+    .MEM_READ(MEM_READ),
+    .MEM_WRITE(MEM_WRITE),
+    .REG_WRITE_MUX(REG_WRITE_MUX),
+    .RET(RET),
+    .alu_op(alu_op),
+    .rd(rd),
+    .rm(rm),
+    .rn(rn),
+    .imm_19(imm_19)
 );
 
 
