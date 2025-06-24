@@ -157,25 +157,21 @@ Decoder decoder (
 
 // TODO: SIMD Controller
 
+// reg_write_data depends on REG_WRITE_MUX
+always @(*) begin
+    for (int i = 0; i < LANE_WIDTH; i = i + 1) begin
+        case (REG_WRITE_MUX)
+            `REG_WRITE_LOAD: reg_write_data[i] = lsu_read_out[i];
+            `REG_WRITE_ALU:  reg_write_data[i] = alu_out[i];
+            `REG_WRITE_IMM:  reg_write_data[i] = {{(DATA_WIDTH-19){imm_19[18]}}, imm_19};
+            default:         reg_write_data[i] = 0;
+        endcase
+    end
+end
+
 genvar i;
 generate 
     for (i = 0; i < LANE_WIDTH; i = i + 1) begin
-        always @ (*) begin
-            case (REG_WRITE_MUX)
-                `REG_WRITE_LOAD: begin
-                    reg_write_data[i] = lsu_read_out[i];
-                end
-
-                `REG_WRITE_ALU: begin
-                    reg_write_data[i] = alu_out[i];
-                end
-
-                `REG_WRITE_IMM: begin
-                    reg_write_data[i] = {{(DATA_WIDTH-19){imm_19[18]}}, imm_19}; // sign-extend immediate value to data width
-                end
-            endcase
-        end
-
         RegisterFile rf (
             .clk(clk),
             .rst(rst),
