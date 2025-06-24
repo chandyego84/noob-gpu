@@ -75,25 +75,35 @@ reg [INSTRUCTION_WIDTH-1:0] instruction;
 
 // -- START Registers --
 // inputs -- come from instruction; same for each lane
+reg [DATA_REG_ADDR_WIDTH-1:0] rd;
 reg [DATA_REG_ADDR_WIDTH-1:0] rm;
 reg [DATA_REG_ADDR_WIDTH-1:0] rn;
-reg [DATA_REG_ADDR_WIDTH-1:0] rd;
 // outputs
 reg [DATA_WIDTH-1:0] rm_data [LANE_WIDTH-1:0];
 reg [DATA_WIDTH-1:0] rn_data [LANE_WIDTH-1:0];
 reg [DATA_WIDTH-1:0] reg_write_data [LANE_WIDTH-1:0];
 // -- END Registers --
 
+// -- REG_WRITE POSSIBLE VALUES
+// lsu_read_out
+reg [DATA_WIDTH-1:0] alu_out [LANE_WIDTH-1:0];
+reg [18:0] imm_19;
+
 // -- START LSU --
 reg [1:0] lsu_state [LANE_WIDTH-1:0];
 reg [DATA_WIDTH-1:0] lsu_read_out[LANE_WIDTH-1:0];
 // -- END LSU --
 
+// -- START ALU --
+reg [2:0] alu_op;
+// -- END ALU --
+
 // -- START Signals -- 
 reg REG_WRITE; // enable write to reg_file
 reg MEM_READ; // enable read from data memory
 reg MEM_WRITE; // enable write to data memory
-reg MEM_TO_REG; // mux: write from memory or ALU to reg_file
+reg REG_WRITE_MUX; // selects what data to write into register file
+reg RET; // instruction signaling end of thread execution
 // -- END Signals --
 
 // -- START PC --
@@ -122,14 +132,50 @@ Fetcher fetcher (
     .prog_mem_read_valid(prog_mem_read_valid),
     .prog_mem_addr(prog_mem_addr),
     .fetcher_state(fetcher_state),
-    .instruction(instruction)
+    .instruction(instruction),    
 );
+
+Decoder decoder (
+    .clk(clk),
+    .rst(rst),
+    .enable(enable),
+    .simd_state(simd_state),
+    .instruction(instruction),
+
+    REG_WRITE(REG_WRITE),
+    MEM_READ(MEM_READ),
+    MEM_WRITE(MEM_WRITE),
+    REG_WRITE_MUX(REG_WRITE_MUX),
+    RET(RET),
+    alu_op(alu_op),
+    rd(rd),
+    rm(rm),
+    rn(rn),
+    imm_19(imm_19)
+);
+
 
 // TODO: SIMD Controller
 
 genvar i;
 generate 
     for (i = 0; i < LANE_WIDTH; i = i + 1) begin
+        always @ (*) begin
+            case (REG_WRITE_MUX)
+                `REG_WRITE_LOAD: begin
+                    reg_write_data[i] = lsu_read_out[i];
+                end
+
+                `REG_WRITE_ALU: begin
+                    reg_write_data[i] = alu_out[i];
+                end
+
+                `REG_WRITE_IMM: begin
+                    reg_write_data[i] = {{(DATA_WIDTH-19){imm_19[18]}}, imm_19}; // sign-extend immediate value to data width
+                end
+            endcase
+        end
+
         RegisterFile rf (
             .clk(clk),
             .rst(rst),
@@ -145,6 +191,7 @@ generate
             .rn(rn),
             .rd(rd),
             .reg_write_data(reg_write_data[i]),
+
             .rm_data(rm_data[i]),
             .rn_data(rn_data[i])
         );
