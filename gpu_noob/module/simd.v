@@ -197,8 +197,8 @@ generate
             .rst(rst),
             .enable(enable),
             .simd_state(simd_state),
-            .rm(rm),
-            .rn(rn),
+            .rm_data(rm_data[i]),
+            .rn_data(rn_data[i]),
             .alu_op(alu_op),
 
             .alu_out(alu_out[i])

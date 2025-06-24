@@ -16,8 +16,8 @@ module ALU # (
     input wire enable,
 
     input wire [2:0] simd_state,
-    input wire [DATA_WIDTH-1:0] rm,
-    input wire [DATA_WIDTH-1:0] rn,
+    input wire [DATA_WIDTH-1:0] rm_data,
+    input wire [DATA_WIDTH-1:0] rn_data,
     input wire [2:0] alu_op,
 
     output reg [DATA_WIDTH-1:0] alu_out
@@ -31,17 +31,17 @@ always @ (posedge(clk)) begin
     else if (enable) begin
         if (simd_state == `SIMD_EXECUTE) begin
             case (alu_op) 
-                `ALU_ADD: alu_out <= rm + rn;
+                `ALU_ADD: alu_out <= rm_data + rn_data;
 
-                `ALU_SUB: alu_out <= rm - rn;
+                `ALU_SUB: alu_out <= rm_data - rn_data;
 
-                `ALU_MUL: alu_out <= rm * rn;
+                `ALU_MUL: alu_out <= rm_data * rn_data;
 
-                `ALU_DIV: alu_out <= rm / rn;
+                `ALU_DIV: alu_out <= rm_data / rn_data;
                 
-                `ALU_AND: alu_out <= rm & rn;
+                `ALU_AND: alu_out <= rm_data & rn_data;
 
-                `ALU_ORR: alu_out <= rm | rn;
+                `ALU_ORR: alu_out <= rm_data | rn_data;
 
                 default: alu_out <= 0;
             endcase
