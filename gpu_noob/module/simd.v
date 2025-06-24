@@ -45,7 +45,7 @@ module SIMD #(
     output reg simd_done,
 
     // data memory feedback
-    input wire [LANE_WIDTH-1:0] data_mem_ready_ack,
+    input wire [LANE_WIDTH-1:0] data_mem_read_ack,
     input wire [LANE_WIDTH-1:0] data_mem_write_ack,
     input wire [DATA_WIDTH-1:0] mem_read_data [LANE_WIDTH-1:0],
 
@@ -81,13 +81,13 @@ wire [DATA_REG_ADDR_WIDTH-1:0] rn;
 // outputs
 wire [DATA_WIDTH-1:0] rm_data [LANE_WIDTH-1:0];
 wire [DATA_WIDTH-1:0] rn_data [LANE_WIDTH-1:0];
-wire [DATA_WIDTH-1:0] reg_write_data [LANE_WIDTH-1:0];
+reg [DATA_WIDTH-1:0] reg_write_data [LANE_WIDTH-1:0];
 // -- END Registers --
 
 // -- REG_WRITE POSSIBLE VALUES
 // lsu_read_out
 wire [DATA_WIDTH-1:0] alu_out [LANE_WIDTH-1:0];
-wire [18:0] imm_19;
+wire signed [18:0] imm_19;
 
 // -- START LSU --
 wire [1:0] lsu_state [LANE_WIDTH-1:0];
@@ -102,7 +102,7 @@ wire [2:0] alu_op;
 wire REG_WRITE; // enable write to reg_file
 wire MEM_READ; // enable read from data memory
 wire MEM_WRITE; // enable write to data memory
-wire REG_WRITE_MUX; // selects what data to write into register file
+wire [1:0] REG_WRITE_MUX; // selects what data to write into register file
 wire RET; // instruction signaling end of thread execution
 // -- END Signals --
 
@@ -194,7 +194,7 @@ generate
             .wave_id(wave_id),
             .block_dim(block_dim),
             .curr_wave_cycle(curr_wave_cycle),
-            .lane_id(i),
+            .lane_id($unsigned(i[4:0])),
             .REG_WRITE(REG_WRITE),
             .simd_state(simd_state),
             .rm(rm),
@@ -227,7 +227,7 @@ generate
             .rn_data(rn_data[i]),
             .MEM_READ(MEM_READ),
             .MEM_WRITE(MEM_WRITE),
-            .mem_read_ack(data_mem_ready_ack[i]),
+            .mem_read_ack(data_mem_read_ack[i]),
             .mem_write_ack(data_mem_write_ack[i]),
             .mem_read_data(mem_read_data[i]),
 

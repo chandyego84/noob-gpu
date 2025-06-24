@@ -55,13 +55,13 @@ always @ (posedge(clk)) begin
                 if (prog_mem_read_ack) begin
                     prog_mem_addr <= 0;
                     instruction <= prog_mem_read_data;
-                    fetcher_state <= FETCHER_FETCHED;
+                    fetcher_state <= `FETCHER_FETCHED;
                 end
             end
 
             `FETCHER_FETCHED: begin
                 if (simd_state == `SIMD_DECODE) begin
-                    fetcher_state <= FETCHER_IDLE;
+                    fetcher_state <= `FETCHER_IDLE;
                 end
             end
         endcase
