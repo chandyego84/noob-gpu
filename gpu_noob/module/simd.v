@@ -192,6 +192,18 @@ generate
             .rn_data(rn_data[i])
         );
 
+        ALU alu (
+            .clk(clk),
+            .rst(rst),
+            .enable(enable),
+            .simd_state(simd_state),
+            .rm(rm),
+            .rn(rn),
+            .alu_op(alu_op),
+
+            .alu_out(alu_out[i])
+        );
+
         LSU lsu (
             .clk(clk),
             .rst(rst),
