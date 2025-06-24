@@ -99,11 +99,12 @@ Instructions have this format: | opcode: 6b | Rd: 7b | Rm: 7b | Rn: 7b | Other: 
 | LDUR |   LDUR rd, rm | 000000 | Rd = global_mem[Rm]
 | STUR |   STUR rn, rm | 000001 | global_mem[Rm] = Rn
 | ADD |  ADD rd, rm, rn | 000010 | Rd = Rm + Rn
-| MUL |  MUL rd, rm, rn  | 000011 | Rd = Rm * Rn
-| DIV |  DIV rd, rm, rn  | 000100 | Rd = Rm / Rn
-| AND | AND rd, rm, rn | 000101 | Rd = Rm bitwise_AND Rn
-| ORR | ORR rd, rm, rn | 000110 | Rd = Rm  bitwise_OR Rn
-| CONST | CONST rd, imm_19 | 000111 | Rd = imm_19 (imm_19 = Rd_Rm_Rn_Other)
+| SUB |  SUB rd, rm, rn | 000011 | Rd = Rm - Rn
+| MUL |  MUL rd, rm, rn  | 000100 | Rd = Rm * Rn
+| DIV |  DIV rd, rm, rn  | 000101 | Rd = Rm / Rn
+| AND | AND rd, rm, rn | 000110 | Rd = Rm bitwise_AND Rn
+| ORR | ORR rd, rm, rn | 000111 | Rd = Rm  bitwise_OR Rn
+| CONST | CONST rd, imm_19 | 001000 | Rd = imm_19 (imm_19 = Rd_Rm_Rn_Other)
 | RET | thread done | 111111 | 111111 x...x 
 ## Registers
 Each SIMD lane has 64 bits x 32 registers.  
