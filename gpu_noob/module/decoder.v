@@ -23,21 +23,17 @@ module Decoder # (
     output reg REG_WRITE,
     output reg MEM_READ,
     output reg MEM_WRITE,
-    output [1:0] reg REG_WRITE_MUX, // MEM, ALU, IMM
+    output reg [1:0] REG_WRITE_MUX, // MEM, ALU, IMM
     output reg RET,
-
-    output reg alu_op, 
-    output reg rd,
-    output reg rm,
-    output reg rn,
-    output reg [18:0] imm_19,
+    output reg alu_op,
+ 
+    output reg [6:0] rd,
+    output reg [6:0] rm,
+    output reg [6:0] rn,
+    output reg [18:0] imm_19
 );
 
-wire [5:0] op_code = instruction[31:26];
-wire [6:0] rd = instruction[25:19];
-wire [6:0] rm = instruction[18:12];
-wire [6:0] rn = instruction[11:5];
-wire [4:0] other = instruction[4:0];
+reg [5:0] op_code;
 
 always @ (posedge(clk)) begin
     if (rst) begin
@@ -47,76 +43,77 @@ always @ (posedge(clk)) begin
         REG_WRITE_MUX <= 0;
         RET <= 0;
         alu_op <= 0;
-        rd <= 0;
-        rm <= 0;
-        rn <= 0;
-        imm_19 <= 0;
     end
 
     else if (enable) begin
-        // rst control signals
         REG_WRITE <= 0;
         MEM_READ <= 0;
         MEM_WRITE <= 0;
         REG_WRITE_MUX <= 0;
-        alu_op <= 0;
         RET <= 0;
+        alu_op <= 0;
 
+        op_code <= instruction[31:26];
+        rd <= instruction[25:19];
+        rm <= instruction[18:12];
+        rn <= instruction[11:5];
+        other <= instruction[4:0];
+        
         if (simd_state == `SIMD_DECODE) begin
             case (op_code)
-                `OP_LOAD begin
+                `OP_LOAD: begin
                     REG_WRITE <= 1;
                     MEM_READ <= 1;
                     REG_WRITE_MUX <= `REG_WRITE_LOAD;
                 end
 
-                `OP_STORE begin
+                `OP_STORE: begin
                     MEM_WRITE <= 0;
                 end
 
-                `OP_ADD begin
+                `OP_ADD: begin
                     REG_WRITE <= 1;
                     alu_op <= `ALU_ADD;
                     REG_WRITE_MUX <= `REG_WRITE_ALU;
                 end
 
-                `OP_SUB begin
+                `OP_SUB: begin
                     REG_WRITE <= 1;
                     alu_op <= `ALU_SUB;
                     REG_WRITE_MUX <= `REG_WRITE_ALU;
                 end
 
-                `OP_MUL begin
+                `OP_MUL: begin
                     REG_WRITE <= 1;
                     alu_op <= `ALU_MUL;
                     REG_WRITE_MUX <= `REG_WRITE_ALU;
                 end
 
-                `OP_DIV begin
+                `OP_DIV: begin
                     REG_WRITE <= 1;
                     alu_op <= `ALU_DIV;
                     REG_WRITE_MUX <= `REG_WRITE_ALU;
                 end
 
-                `OP_AND begin
+                `OP_AND: begin
                     REG_WRITE <= 1;
                     alu_op <= `ALU_AND;
                     REG_WRITE_MUX <= `REG_WRITE_ALU;
                 end
 
-                `OP_ORR begin
+                `OP_ORR: begin
                     REG_WRITE <= 1;
                     alu_op <= `ALU_ORR;
                     REG_WRITE_MUX <= `REG_WRITE_ALU;
                 end
 
-                `OP_CONST begin
+                `OP_CONST: begin
                     REG_WRITE <= 1;
                     REG_WRITE_MUX <= `REG_WRITE_IMM;
                     imm_19 <= {rm, rn, other};
                 end
 
-                `OP_RET begin
+                `OP_RET: begin
                     RET <= 1;
                 end
             endcase

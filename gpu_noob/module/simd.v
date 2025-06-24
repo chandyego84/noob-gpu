@@ -132,7 +132,7 @@ Fetcher fetcher (
     .prog_mem_read_valid(prog_mem_read_valid),
     .prog_mem_addr(prog_mem_addr),
     .fetcher_state(fetcher_state),
-    .instruction(instruction),    
+    .instruction(instruction)    
 );
 
 Decoder decoder (

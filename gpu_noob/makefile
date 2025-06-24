@@ -11,15 +11,7 @@ TOPLEVEL        ?= $(DUT)
 MODULE          ?= $(TESTBENCH)
 
 # === Source File Paths ===
-VERILOG_SOURCES = \
-    $(PWD)/module/block_dispatch.v \
-    $(PWD)/module/common_defs.v \
-    $(PWD)/module/lsu.v \
-    $(PWD)/module/pc.v \
-    $(PWD)/module/register.v \
-    $(PWD)/module/simd.v \
-    $(PWD)/module/simd_controller.v \
-    $(PWD)/module/wave_dispatch.v
+VERILOG_SOURCES := $(wildcard $(PWD)/module/*.v)
 
 # === Verilog Include Directories ===
 VERILOG_INCLUDE_DIRS := $(PWD)/module
