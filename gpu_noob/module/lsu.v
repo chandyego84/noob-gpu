@@ -22,12 +22,12 @@ module LSU # (
     input wire [2:0] simd_state,
 
     // register values
-        // load: Rd = global_mem[Rm]
-        // store: global_mem[Rm] = Rn
-    input wire [DATA_REG_ADDR_WIDTH-1:0] rm, 
-    input wire [DATA_REG_ADDR_WIDTH-1:0] rn,
+        // load: Rd = global_mem[rm]
+        // store: global_mem[rm] = rn
+    input wire [DATA_REG_ADDR_WIDTH-1:0] rm_data, 
+    input wire [DATA_REG_ADDR_WIDTH-1:0] rn_data,
 
-    // enable signals -- which op to perform
+    // enable signals -- which op to perform_data
     input wire MEM_READ,
     input wire MEM_WRITE,
 
@@ -74,7 +74,7 @@ always @ (posedge(clk)) begin
                 `LSU_REQUESTING: begin
                     // give signal/data to memory
                     mem_read_valid <= 1;
-                    mem_addr <= rm;
+                    mem_addr <= rm_data;
                     lsu_state <= `LSU_WAITING;
                 end
 
@@ -108,8 +108,8 @@ always @ (posedge(clk)) begin
                 `LSU_REQUESTING: begin
                     // give signal/data to memory
                     mem_write_valid <= 1;
-                    mem_addr <= rm;
-                    mem_write_data <= rn;
+                    mem_addr <= rm_data;
+                    mem_write_data <= rn_data;
                     lsu_state <= LSU_WAITING;
                 end
 
