@@ -1,3 +1,37 @@
+from enum import Enum
+
+class SIMD_State(Enum):
+    IDLE = 0
+    FETCH = 1
+    DECODE = 2
+    REQUEST = 3
+    WAIT = 4
+    EXECUTE = 5
+    UPDATE = 6
+    DONE = 7
+
+class LSU_State(Enum):
+    IDLE = 0
+    REQUESTING = 1
+    WAITING = 2
+    DONE = 3
+
+class RegWrite_Mux(Enum):
+    REG_WRITE_LOAD = 0
+    REG_WRITE_ALU = 1
+    REG_WRITE_IMM = 2
+
+def get_state(state_type: Enum, val):
+    try:
+        v = safe_int(val)
+        if v == "X":
+            return "X"
+        
+        return state_type(v).name
+    
+    except Exception:
+        return "X"
+
 def safe_int(val):
     try:
         v = int(val)
