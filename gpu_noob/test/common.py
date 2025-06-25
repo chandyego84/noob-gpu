@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum    
 
 class SIMD_State(Enum):
     IDLE = 0
@@ -15,6 +15,11 @@ class LSU_State(Enum):
     REQUESTING = 1
     WAITING = 2
     DONE = 3
+
+class Fetcher_State(Enum):
+    IDLE = 0
+    FETCHING = 1
+    FETCHED = 2
 
 class RegWrite_Mux(Enum):
     REG_WRITE_LOAD = 0
@@ -41,6 +46,18 @@ def safe_int(val):
         
         return v
         
+    except Exception:
+        return "X"
+
+def safe_hex(val):
+    try:
+        v = hex(val)
+
+        if hasattr(val, 'is_resolvable'):
+            return "X"
+        
+        return v
+    
     except Exception:
         return "X"
 
