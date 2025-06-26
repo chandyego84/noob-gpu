@@ -25,6 +25,7 @@ module Decoder # (
     output reg MEM_WRITE,
     output reg [1:0] REG_WRITE_MUX, // MEM, ALU, IMM
     output reg RET,
+    output reg [5:0] op_code,
     output reg [2:0] alu_op,
  
     output reg [6:0] rd,
@@ -33,7 +34,6 @@ module Decoder # (
     output reg [18:0] imm_19
 );
 
-reg [5:0] op_code;
 reg [4:0] other;
 
 always @ (posedge(clk)) begin
@@ -43,6 +43,7 @@ always @ (posedge(clk)) begin
         MEM_WRITE <= 0;
         REG_WRITE_MUX <= 0;
         RET <= 0;
+        op_code <= 0;
         alu_op <= 0;
     end
 

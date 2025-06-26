@@ -104,6 +104,7 @@ wire MEM_READ; // enable read from data memory
 wire MEM_WRITE; // enable write to data memory
 wire [1:0] REG_WRITE_MUX; // selects what data to write into register file
 wire RET; // instruction signaling end of thread execution
+wire [5:0] op_code;
 // -- END Signals --
 
 // -- START PC --
@@ -148,6 +149,7 @@ Decoder decoder (
     .MEM_WRITE(MEM_WRITE),
     .REG_WRITE_MUX(REG_WRITE_MUX),
     .RET(RET),
+    .op_code(op_code),
     .alu_op(alu_op),
     .rd(rd),
     .rm(rm),
