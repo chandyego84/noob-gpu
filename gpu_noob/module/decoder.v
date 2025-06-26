@@ -46,21 +46,21 @@ always @ (posedge(clk)) begin
         alu_op <= 0;
     end
 
-    else if (enable) begin
-        REG_WRITE <= 0;
-        MEM_READ <= 0;
-        MEM_WRITE <= 0;
-        REG_WRITE_MUX <= 0;
-        RET <= 0;
-        alu_op <= 0;
-
-        op_code <= instruction[31:26];
-        rd <= instruction[25:19];
-        rm <= instruction[18:12];
-        rn <= instruction[11:5];
-        other <= instruction[4:0];
-        
+    else if (enable) begin        
         if (simd_state == `SIMD_DECODE) begin
+            REG_WRITE <= 0;
+            MEM_READ <= 0;
+            MEM_WRITE <= 0;
+            REG_WRITE_MUX <= 0;
+            RET <= 0;
+            alu_op <= 0;
+
+            op_code <= instruction[31:26];
+            rd <= instruction[25:19];
+            rm <= instruction[18:12];
+            rn <= instruction[11:5];
+            other <= instruction[4:0];
+
             case (op_code)
                 `OP_LOAD: begin
                     REG_WRITE <= 1;
