@@ -99,11 +99,13 @@ always @ (posedge(clk)) begin
                     // part of wave is done executing kernel
                     curr_wave_cycle <= curr_wave_cycle + 1;
                     curr_pc <= 0; // rst PC to 0 for next part of the wave
+                    simd_state <= `SIMD_FETCH;
                 end
 
                 else begin
                     // move on to next instruction
                     curr_pc <= pc_out;
+                    simd_state <= `SIMD_FETCH;
                 end
             end
 

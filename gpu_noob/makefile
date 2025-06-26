@@ -4,8 +4,8 @@ TOPLEVEL_LANG   ?= verilog
 WAVE            ?= 0
 
 # === Design and Testbench Modules ===
-DUT             ?= RegisterFile
-TESTBENCH       ?= register_tb
+DUT             ?= SIMD
+TESTBENCH       ?= simd_tb
 
 TOPLEVEL        ?= $(DUT)
 MODULE          ?= $(TESTBENCH)

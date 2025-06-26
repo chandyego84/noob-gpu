@@ -53,7 +53,7 @@ def safe_hex(val):
     try:
         v = hex(val)
 
-        if hasattr(val, 'is_resolvable'):
+        if hasattr(val, 'is_resolvable') and not val.is_resolvable:
             return "X"
         
         return v

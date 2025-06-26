@@ -128,16 +128,16 @@ Each SIMD lane has 64 bits x 32 registers.
 ## Kernel Examples
 ### Vector addition
 ```
-.threads 8
-.data 0 1 2 3 4 5 6 7 ; matrix A (1 x 8)
-.data 0 1 2 3 4 5 6 7 ; matrix B (1 x 8)
+.threads 64
+.data 0 1 2 3 ... 63; matrix A (1 x 64)
+.data 0 1 2 3 ... 63; matrix B (1 x 64)
 
 MUL R4, %blockIdx, %blockDim 
 ADD R4, R4, %threadIdx ; i = blockIdx * blockDim + threadIdx 
 
 CONST R5, #0 ; baseA (matrix A base address) 
-CONST R6, #8 ; baseB (matrix B base address) 
-CONST R7, #16 ; baseC (matrix C base address) 
+CONST R6, #64 ; baseB (matrix B base address) 
+CONST R7, #128 ; baseC (matrix C base address) 
 
 ADD R8, R5, R4 ; addr(A[i]) = baseA + i 
 LDR R8, R8 ; load A[i] from global memory 

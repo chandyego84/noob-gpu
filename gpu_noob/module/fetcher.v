@@ -53,7 +53,7 @@ always @ (posedge(clk)) begin
 
             `FETCHER_FETCHING: begin
                 if (prog_mem_read_ack) begin
-                    prog_mem_addr <= 0;
+                    prog_mem_read_valid <= 0;
                     instruction <= prog_mem_read_data;
                     fetcher_state <= `FETCHER_FETCHED;
                 end

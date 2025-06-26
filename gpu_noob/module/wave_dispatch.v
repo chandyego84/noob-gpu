@@ -33,6 +33,7 @@ module WaveDispatch #(
     output reg [NUM_SIMDS-1:0] simd_start, // SIMD signals for when a new wave was just assigned to it
     // -- SIMD wave dispatch states -- END
 
+    output wire [31:0] num_waves, // num of waves in current block
     output reg signed [31:0] simd_wave_id [0:NUM_SIMDS-1], // wave_id for a SIMD
 
     output reg block_done // signal for when all warps are processed (current block is done)
@@ -47,6 +48,7 @@ reg [31:0] num_actual_block_threads; // num of threads in current block
 
 wire [31:0] num_blocks;
 assign num_blocks = (num_threads + block_dim - 1) / block_dim;
+assign num_waves = (num_actual_block_threads + WAVE_SIZE - 1) / WAVE_SIZE; // how many waves in the current block -- depends on number of actual threads on the current block
 
 // calculate actual number of threads for the current block
     // (last block might be partially filled)
@@ -61,10 +63,6 @@ always @ (*) begin
         num_actual_block_threads = block_dim;
     end
 end
-
-// how many waves in the current block -- depends on number of actual threads on the current block
-wire [31:0] num_waves; // num of waves in current block
-assign num_waves = (num_actual_block_threads + WAVE_SIZE - 1) / WAVE_SIZE;
 
 integer i;
 always @ (posedge(clk)) begin

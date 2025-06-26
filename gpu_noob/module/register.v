@@ -58,7 +58,6 @@ module RegisterFile # (
 
 reg [DATA_WIDTH-1:0] reg_file [NUM_REGISTERS-1:0];
 
-wire [31:0] thread_id_x;
 assign thread_id_x = wave_id * WAVE_SIZE + (curr_wave_cycle * LANE_WIDTH + lane_id);
 
 always @ (block_id, block_dim, thread_id_x) begin
