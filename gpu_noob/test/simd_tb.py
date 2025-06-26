@@ -161,9 +161,9 @@ async def test_simd_vector_add(dut):
     instructions = [
         0x1021C3A0,  # MUL R4, R28, R29
         0x08041F00,  # ADD R4, R4, R30
-        0x20280000,  # CONST R5, 0
-        0x20300200,  # CONST R6, 32
-        0x20380400,   # CONST R7, 64
+        0x20200000,  # CONST R5, 0
+        0x20300020,  # CONST R6, 32
+        0x20380040,   # CONST R7, 64
         0x08105080,  # ADD R8, R5, R4
         0x00108000,  # LDUR R8, R8
         0x08126080,  # ADD R9, R6, R4
