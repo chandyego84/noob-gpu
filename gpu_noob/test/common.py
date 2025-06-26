@@ -26,6 +26,18 @@ class RegWrite_Mux(Enum):
     REG_WRITE_ALU = 1
     REG_WRITE_IMM = 2
 
+class OpCode(Enum):
+    LOAD = 0
+    STORE = 1
+    ADD = 2
+    SUB = 3
+    MUL = 4
+    DIV = 5
+    AND = 6
+    ORR = 7
+    CONST = 8
+    RET = 63
+
 def get_state(state_type: Enum, val):
     try:
         v = safe_int(val)
