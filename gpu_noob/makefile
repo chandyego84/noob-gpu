@@ -1,7 +1,7 @@
 # === Simulator and Language ===
 SIM             ?= icarus
 TOPLEVEL_LANG   ?= verilog
-WAVE            ?= 0
+WAVE            ?= 1
 
 # === Design and Testbench Modules ===
 DUT             ?= SIMD

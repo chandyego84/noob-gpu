@@ -114,6 +114,7 @@ wire [PROGRAM_MEM_ADDR_WIDTH-1:0] pc_out; // calculated next pc
 PC#(.PROGRAM_MEM_ADDR_WIDTH(PROGRAM_MEM_ADDR_WIDTH)) pc (
     .clk(clk),
     .rst(rst),
+    .enable(enable),
     .simd_state(simd_state),
     .DISPATCH_NEW_WAVE(simd_start),
     .pc_in(curr_pc),

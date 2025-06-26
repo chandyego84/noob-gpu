@@ -10,7 +10,7 @@ LANE_WIDTH = 16
 DATA_WIDTH = 64
 ADDR_WIDTH = 7  # 128 locations for data memory
 
-# --- Simulate the kernel in one SIMD over two waves ---
+# --- Simulate the kernel in one SIMD over two wavecycles ---
 ### Calculate global_id ###
 # MUL R4, %blockIdx, %blockDim
 # MUL R4, %blockIdx, %blockDim 
@@ -157,13 +157,12 @@ async def test_simd_vector_add(dut):
         data_mem.mem[i+NUM_THREADS] = i # Vector B: 32-63
     
     # Load vector addition program
-    # TODO: CONST HEX INSTRUCTIONS ARE WRONG!!!!
     instructions = [
         0x1021C3A0,  # MUL R4, R28, R29
         0x08041F00,  # ADD R4, R4, R30
         0x20200000,  # CONST R5, 0
         0x20300020,  # CONST R6, 32
-        0x20380040,   # CONST R7, 64
+        0x20380040,  # CONST R7, 64
         0x08105080,  # ADD R8, R5, R4
         0x00108000,  # LDUR R8, R8
         0x08126080,  # ADD R9, R6, R4
@@ -196,7 +195,7 @@ async def test_simd_vector_add(dut):
     dut.simd_start.value = 0
     await RisingEdge(dut.clk)
 
-    for i in range(25):
+    for i in range(100):
         await RisingEdge(dut.clk)
 
     '''
