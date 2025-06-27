@@ -36,6 +36,15 @@ module Decoder # (
 
 reg [4:0] other;
 
+always @ (*) begin
+    op_code <= instruction[31:26];
+    rd <= instruction[25:19];
+    rm <= instruction[18:12];
+    rn <= instruction[11:5];
+    other <= instruction[4:0];
+end
+
+
 always @ (posedge(clk)) begin
     if (rst) begin
         REG_WRITE <= 0;
@@ -45,6 +54,10 @@ always @ (posedge(clk)) begin
         RET <= 0;
         op_code <= 0;
         alu_op <= 0;
+        rd <= 0;
+        rm <= 0;
+        rn <= 0;
+        imm_19 <= 0;
     end
 
     else if (enable) begin        
@@ -56,12 +69,6 @@ always @ (posedge(clk)) begin
             RET <= 0;
             alu_op <= 0;
 
-            op_code <= instruction[31:26];
-            rd <= instruction[25:19];
-            rm <= instruction[18:12];
-            rn <= instruction[11:5];
-            other <= instruction[4:0];
-
             case (op_code)
                 `OP_LOAD: begin
                     REG_WRITE <= 1;
@@ -70,7 +77,7 @@ always @ (posedge(clk)) begin
                 end
 
                 `OP_STORE: begin
-                    MEM_WRITE <= 0;
+                    MEM_WRITE <= 1;
                 end
 
                 `OP_ADD: begin

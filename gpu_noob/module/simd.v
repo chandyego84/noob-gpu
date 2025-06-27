@@ -79,6 +79,8 @@ wire [DATA_REG_ADDR_WIDTH-1:0] rd;
 wire [DATA_REG_ADDR_WIDTH-1:0] rm;
 wire [DATA_REG_ADDR_WIDTH-1:0] rn;
 // outputs
+wire [$clog2(LANE_WIDTH-1):0] lane_id [LANE_WIDTH-1:0];
+wire [DATA_WIDTH-1:0] out_thread_id_x [LANE_WIDTH-1:0];
 wire [DATA_WIDTH-1:0] rm_data [LANE_WIDTH-1:0];
 wire [DATA_WIDTH-1:0] rn_data [LANE_WIDTH-1:0];
 reg [DATA_WIDTH-1:0] reg_write_data [LANE_WIDTH-1:0];
@@ -205,6 +207,8 @@ generate
             .rd(rd),
             .reg_write_data(reg_write_data[i]),
 
+            .out_lane_id(lane_id[i]),
+            .out_thread_id_x(out_thread_id_x[i]),
             .rm_data(rm_data[i]),
             .rn_data(rn_data[i])
         );

@@ -12,8 +12,7 @@ ADDR_WIDTH = 7  # 128 locations for data memory
 
 # --- Simulate the kernel in one SIMD over two wavecycles ---
 ### Calculate global_id ###
-# MUL R4, %blockIdx, %blockDim
-# MUL R4, %blockIdx, %blockDim 
+# MUL R4, %blockIdx, %blockDim # 0 * 64
 # ADD R4, R4, %threadIdx ; i = blockIdx * blockDim + threadIdx 
 
 
@@ -50,23 +49,30 @@ async def log_signals(dut):
         dut._log.info(
             f"\n---- CYCLE {cycle} ----\n"
             f"INSTRUCTION={safe_hex(dut.instruction.value)}, PC={safe_int(dut.curr_pc.value)}, PC_OUT={safe_int(dut.pc_out.value)}\n"
+            f"OPCODE={get_state(OpCode, safe_int(dut.op_code.value))}, Total_Wave_Cycles={safe_int(dut.TOTAL_WAVE_CYCLES.value)}\n"
+            
             f"rst={safe_int(dut.rst.value)} enable={safe_int(dut.enable.value)}\n"
             f"FETCHER_STATE={get_state(Fetcher_State, dut.fetcher_state.value)}\n"
             f"SIMD_STATE={get_state(SIMD_State, dut.simd_state.value)} wave_id={safe_int(dut.wave_id.value)}, wave_cycle={safe_int(dut.curr_wave_cycle.value)}\n"
-            f"simd_ready={safe_int(dut.simd_ready.value)}, simd_start={safe_int(dut.simd_start.value)}, simd_working={safe_int(dut.simd_working.value)}, simd_done={safe_int(dut.simd_done.value)} "
-            f"MEM_READ={safe_int(dut.MEM_READ.value)} MEM_WRITE={safe_int(dut.MEM_WRITE.value)}\n"
+            f"simd_ready={safe_int(dut.simd_ready.value)}, simd_start={safe_int(dut.simd_start.value)}, simd_working={safe_int(dut.simd_working.value)}, simd_done={safe_int(dut.simd_done.value)}\n"
+            f"Rd={safe_int(dut.rd.value)}, Rm={safe_int(dut.rm.value)}, Rn={safe_int(dut.rn.value)}\n"
         )
 
         dut._log.info("------------------------------------------------------- \n"
             f"PROG_MEM_READ={safe_int(dut.prog_mem_read_valid.value)} "
             f"PROG_MEM_ACK={safe_int(dut.prog_mem_read_ack.value)}\n"
+            f"DATA_MEM_READ={safe_int(dut.MEM_READ.value)} DATA_MEM_WRITE={safe_int(dut.MEM_WRITE.value)}\n"
+            f"REG_WRITE={safe_int(dut.REG_WRITE.value)}\n"
             f"------------------------------------------------------- \n")
 
         dut._log.info("------------------------------------------------------- \n")
         for lane in range(LANE_WIDTH):
             dut._log.info(
-                f"  Lane {lane}: "
-                f"LSU_State: {get_state(LSU_State, dut.lsu_state[lane].value)} "
+                f"  Lane {safe_int(dut.lane_id[lane])}: "
+                f"ThreadIdx: {safe_int(dut.out_thread_id_x[lane].value)} "
+                #f"LSU_State: {get_state(LSU_State, dut.lsu_state[lane].value)} "
+                f"rm_data={safe_int(dut.rm_data[lane].value)}, rn_data={safe_int(dut.rn_data[lane].value)} " 
+                f"ALU_Out: {safe_int(dut.alu_out[lane].value)} "
                 f"mem_read_valid={safe_int(dut.mem_read_valid[lane].value)} "
                 f"mem_write_valid={safe_int(dut.mem_write_valid[lane].value)} "
                 f"mem_addr={safe_int(dut.mem_addr[lane].value)} "
@@ -135,6 +141,17 @@ class DataMemoryModel:
                     self.dut.data_mem_write_ack[lane].value = 1
                 else:
                     self.dut.data_mem_write_ack[lane].value = 0
+    
+    def dump(self, max_lines=2**ADDR_WIDTH):
+        """Print memory contents as Addr[N]: VALUE for each address."""
+        mem_size = len(self.mem)
+        print("\nData Memory Dump:")
+        print("-" * 30)
+        for addr in range(mem_size):
+            if max_lines is not None and addr >= max_lines:
+                break
+            print(f"Addr[{addr}]: {self.mem[addr]}")
+        print("-" * 30)
 
 @cocotb.test()
 async def test_simd_vector_add(dut):
@@ -156,21 +173,40 @@ async def test_simd_vector_add(dut):
         data_mem.mem[i] = i # Vector A: 0-31
         data_mem.mem[i+NUM_THREADS] = i # Vector B: 32-63
     
+    data_mem.dump()
+    
     # Load vector addition program
+    '''
     instructions = [
-        0x1021C3A0,  # MUL R4, R28, R29
-        0x08041F00,  # ADD R4, R4, R30
+        0x1021C3A0,  # MUL R4, R28, R29 
+        0x82043C0,  # ADD R4, R4, R30
         0x20200000,  # CONST R5, 0
         0x20300020,  # CONST R6, 32
         0x20380040,  # CONST R7, 64
-        0x08105080,  # ADD R8, R5, R4
-        0x00108000,  # LDUR R8, R8
-        0x08126080,  # ADD R9, R6, R4
-        0x00129000,  # LDUR R9, R9
-        0x08148120,  # ADD R10, R8, R9
-        0x08167080,  # ADD R11, R7, R4
-        0x0400B140,  # STUR R10, R11
+        0x8405080,  # ADD R8, R5, R4
+        0x408000,  # LDUR R8, R8
+        0x8486080,  # ADD R9, R6, R4
+        0x489000,  # LDUR R9, R9
+        0x8508120,  # ADD R10, R8, R9
+        0x8587080,  # ADD R11, R7, R4
+        0x400B140,  # STUR R10, R11
         0xFC000000   # RET
+    ]
+    '''
+    instructions = [
+        0b000100_0000100_0011100_0011101_00000, # MUL R4, R28, R29 
+        0b000010_0000100_0000100_0011110_00000, # ADD R4, R4, R30
+        0b001000_0000101_0000000_0000000_00000, # CONST R5, 0
+        0b001000_0000110_0000000_0000001_00000, # CONST R6, 32
+        0b001000_0000111_0000000_0000010_00000, # CONST R7, 64
+        0b000010_0001000_0000101_0000100_00000, # ADD R8, R5, R4
+        0b000000_0001000_0001000_0000000_00000, # LDUR R8, R8
+        0b000010_0001001_0000110_0000100_00000, # ADD R9, R6, R4
+        0b000000_0001001_0001001_0000000_00000, # LDUR R9, R9
+        0b000010_0001010_0001000_0001001_00000, # ADD R10, R8, R9
+        0b000010_0001011_0000111_0000100_00000, # ADD R11, R7, R4
+        0b000001_0000000_0001011_0001010_00000, # STUR R10, R11
+        0b111111_0000000_0000000_0000000_00000 # RET
     ]
     for i, instr in enumerate(instructions):
         prog_mem.mem[i] = instr
@@ -195,14 +231,15 @@ async def test_simd_vector_add(dut):
     dut.simd_start.value = 0
     await RisingEdge(dut.clk)
 
-    for i in range(100):
-        await RisingEdge(dut.clk)
+#    for i in range(100):
+#      await RisingEdge(dut.clk)
 
-    '''
     while dut.simd_done.value != 1:
         await RisingEdge(dut.clk)    
-    # Verify results (C = A + B)
     
+    data_mem.dump()
+
+    '''
     for i in range(64):
         actual = data_mem.mem[128 + i]
         expected = i + i  # A[i] + B[i]

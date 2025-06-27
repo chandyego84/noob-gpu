@@ -51,6 +51,9 @@ module RegisterFile # (
     // write data -- from ALU or memory
     input wire [DATA_WIDTH-1:0] reg_write_data, 
 
+    output wire [$clog2(LANE_WIDTH-1):0] out_lane_id,
+    output wire  [DATA_WIDTH-1:0] out_thread_id_x,
+
     // reading data from registers
     output reg [DATA_WIDTH-1:0] rm_data,
     output reg [DATA_WIDTH-1:0] rn_data
@@ -58,7 +61,11 @@ module RegisterFile # (
 
 reg [DATA_WIDTH-1:0] reg_file [NUM_REGISTERS-1:0];
 
-assign thread_id_x = wave_id * WAVE_SIZE + (curr_wave_cycle * LANE_WIDTH + lane_id);
+wire [DATA_WIDTH-1:0] thread_id_x;
+assign thread_id_x = wave_id * WAVE_SIZE + (curr_wave_cycle * LANE_WIDTH) + lane_id;
+
+assign out_lane_id = lane_id;
+assign out_thread_id_x = thread_id_x;
 
 always @ (block_id, block_dim, thread_id_x) begin
     reg_file[28] <= block_id;
