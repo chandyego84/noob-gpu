@@ -141,7 +141,7 @@ Each SIMD lane has 64 bits x 32 registers.
 ## Kernel Examples
 ### Vector addition
 ```
-.threads 64
+.threads 32
 .data 0 1 2 3 ... 31; matrix A (1 x 32)
 .data 0 1 2 3 ... 31; matrix B (1 x 32)
 
@@ -169,6 +169,9 @@ RET ; end of kernel
 ### Initial Data Memory State
 ![VEC_ADD_KERNEL_LOADED](img/vec_add_loaded.png) 
 
+### Threads Running Example
+![THREADS_RUNNING](img/threads.png)
+
 ### Resulting Data Memory State
 ![VEC_ADD_RESULT](img/VEC_ADD_RESULT.png)
 
@@ -177,3 +180,4 @@ RET ; end of kernel
 #### [GCN1 Architecture](https://www.techpowerup.com/gpu-specs/docs/amd-gcn1-architecture.pdf)
 #### [TinyGPU](https://github.com/adam-maj/tiny-gpu/tree/master)
 #### [GPU Glossary](https://modal.com/gpu-glossary)
+#### [Performance Analysis and Tuning for General-PurposeGraphics Processing Units GPGPU](https://pages.cs.wisc.edu/~markhill/restricted/synthesis_gpgpu_draft2012_09.pdf)

@@ -83,7 +83,14 @@ async def log_signals(dut, DEBUG=False):
             dut._log.info("\n ------------------------------------------------------- \n")
         
         else:
-            print(f"Cycle: {cycle}")
+            op_str = get_state(OpCode, safe_int(dut.op_code.value))
+            simd_str = get_state(SIMD_State, dut.simd_state.value)
+            pc = safe_int(dut.curr_pc.value)
+            print(f"Cycle: {cycle:3} | PC: {pc:2} | OPCODE: {op_str:<8} | SIMD_STATE: {simd_str}")
+            for lane in range(LANE_WIDTH):
+                thread_id = safe_int(dut.out_thread_id_x[lane].value)
+                alu_out = safe_int(dut.alu_out[lane].value)
+                print(f"  Lane {lane:2}: ThreadIdx={thread_id:2}, ALU_Out={alu_out}")
         
         cycle += 1
     
@@ -153,7 +160,7 @@ class DataMemoryModel:
             if addr % line_width == 0:
                 if addr != 0:
                     print()
-                    
+
             if (addr == NUM_THREADS * 2):
                 print("-"*15 + "Result addresses" + "-"*15)
 
