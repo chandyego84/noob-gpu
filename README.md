@@ -171,3 +171,9 @@ RET ; end of kernel
 
 ### Resulting Data Memory State
 ![VEC_ADD_RESULT](img/VEC_ADD_RESULT.png)
+
+
+## Credits, Resources -- Inspired by/helpful
+#### [GCN1 Architecture](https://www.techpowerup.com/gpu-specs/docs/amd-gcn1-architecture.pdf)
+#### [TinyGPU](https://github.com/adam-maj/tiny-gpu/tree/master)
+#### [GPU Glossary](https://modal.com/gpu-glossary)
