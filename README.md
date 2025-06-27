@@ -78,6 +78,19 @@ GPUs expose the SIMT programmihng model while execution is implemented in GPU co
         - Load/Store Unit (16)
         - Vector Register File - Registers to store data for up to 1 wavefront
 
+## Architecture Status:
+    - [x]  Block Dispatcher  
+    - [x]  Wavefront Dispatcher
+    - [x]  Instruction Fetcher/Decoder
+    - [x]  Scheduler (SIMD Controller) 
+    - [x]  SIMD Unit (includes PC, ALU/LSU lanes, etc.)
+    - [ ]  Compute Unit
+    - [ ]  Memory, Memory Controllers
+    - [ ]  Instruction Buffer (hard)
+    - [ ]  Caching (hard x10) 
+    - [ ]  Wave Scheduler (why would you do this? especially in Verilog...)
+* Memory/Memory Controllers are simulated in the SIMD testbench for now.
+
 ## Architecture Information:
 __Doubleword__: 64 bits  
 __Word__: 32 bits  
@@ -129,8 +142,8 @@ Each SIMD lane has 64 bits x 32 registers.
 ### Vector addition
 ```
 .threads 64
-.data 0 1 2 3 ... 63; matrix A (1 x 64)
-.data 0 1 2 3 ... 63; matrix B (1 x 64)
+.data 0 1 2 3 ... 31; matrix A (1 x 32)
+.data 0 1 2 3 ... 31; matrix B (1 x 32)
 
 MUL R4, %blockIdx, %blockDim 
 ADD R4, R4, %threadIdx ; i = blockIdx * blockDim + threadIdx 
@@ -152,3 +165,9 @@ STR R10, R11 ; store C[i] in global memory
 
 RET ; end of kernel
 ```
+
+### Initial Data Memory State
+![VEC_ADD_KERNEL_LOADED](img/vec_add_loaded.png) 
+
+### Resulting Data Memory State
+![VEC_ADD_RESULT](img/VEC_ADD_RESULT.png)

@@ -42,44 +42,48 @@ A = [i for i in range(WAVE_SIZE)]
 B = [i for i in range(WAVE_SIZE)]
 C_expected = [A[i] + B[i] for i in range(WAVE_SIZE)]
 
-async def log_signals(dut):
+async def log_signals(dut, DEBUG=False):
     cycle = 0
     while True:
         await RisingEdge(dut.clk)
-        dut._log.info(
-            f"\n---- CYCLE {cycle} ----\n"
-            f"INSTRUCTION={safe_hex(dut.instruction.value)}, PC={safe_int(dut.curr_pc.value)}, PC_OUT={safe_int(dut.pc_out.value)}\n"
-            f"OPCODE={get_state(OpCode, safe_int(dut.op_code.value))}, Total_Wave_Cycles={safe_int(dut.TOTAL_WAVE_CYCLES.value)}\n"
-            
-            f"rst={safe_int(dut.rst.value)} enable={safe_int(dut.enable.value)}\n"
-            f"FETCHER_STATE={get_state(Fetcher_State, dut.fetcher_state.value)}\n"
-            f"SIMD_STATE={get_state(SIMD_State, dut.simd_state.value)} wave_id={safe_int(dut.wave_id.value)}, wave_cycle={safe_int(dut.curr_wave_cycle.value)}\n"
-            f"simd_ready={safe_int(dut.simd_ready.value)}, simd_start={safe_int(dut.simd_start.value)}, simd_working={safe_int(dut.simd_working.value)}, simd_done={safe_int(dut.simd_done.value)}\n"
-            f"Rd={safe_int(dut.rd.value)}, Rm={safe_int(dut.rm.value)}, Rn={safe_int(dut.rn.value)}\n"
-        )
-
-        dut._log.info("------------------------------------------------------- \n"
-            f"PROG_MEM_READ={safe_int(dut.prog_mem_read_valid.value)} "
-            f"PROG_MEM_ACK={safe_int(dut.prog_mem_read_ack.value)}\n"
-            f"DATA_MEM_READ={safe_int(dut.MEM_READ.value)} DATA_MEM_WRITE={safe_int(dut.MEM_WRITE.value)}\n"
-            f"REG_WRITE={safe_int(dut.REG_WRITE.value)}\n"
-            f"------------------------------------------------------- \n")
-
-        dut._log.info("------------------------------------------------------- \n")
-        for lane in range(LANE_WIDTH):
+        if (DEBUG):
             dut._log.info(
-                f"  Lane {safe_int(dut.lane_id[lane])}: "
-                f"ThreadIdx: {safe_int(dut.out_thread_id_x[lane].value)} "
-                #f"LSU_State: {get_state(LSU_State, dut.lsu_state[lane].value)} "
-                f"rm_data={safe_int(dut.rm_data[lane].value)}, rn_data={safe_int(dut.rn_data[lane].value)} " 
-                f"ALU_Out: {safe_int(dut.alu_out[lane].value)} "
-                f"mem_read_valid={safe_int(dut.mem_read_valid[lane].value)} "
-                f"mem_write_valid={safe_int(dut.mem_write_valid[lane].value)} "
-                f"mem_addr={safe_int(dut.mem_addr[lane].value)} "
-                f"mem_write_data={safe_int(dut.mem_write_data[lane].value)} "
-                f"mem_read_data={safe_int(dut.mem_read_data[lane].value)}"
+                f"\n---- CYCLE {cycle} ----\n"
+                f"INSTRUCTION={safe_hex(dut.instruction.value)}, PC={safe_int(dut.curr_pc.value)}, PC_OUT={safe_int(dut.pc_out.value)}\n"
+                f"OPCODE={get_state(OpCode, safe_int(dut.op_code.value))}, Total_Wave_Cycles={safe_int(dut.TOTAL_WAVE_CYCLES.value)}\n"
+                
+                f"rst={safe_int(dut.rst.value)} enable={safe_int(dut.enable.value)}\n"
+                f"FETCHER_STATE={get_state(Fetcher_State, dut.fetcher_state.value)}\n"
+                f"SIMD_STATE={get_state(SIMD_State, dut.simd_state.value)} wave_id={safe_int(dut.wave_id.value)}, wave_cycle={safe_int(dut.curr_wave_cycle.value)}\n"
+                f"simd_ready={safe_int(dut.simd_ready.value)}, simd_start={safe_int(dut.simd_start.value)}, simd_working={safe_int(dut.simd_working.value)}, simd_done={safe_int(dut.simd_done.value)}\n"
+                f"Rd={safe_int(dut.rd.value)}, Rm={safe_int(dut.rm.value)}, Rn={safe_int(dut.rn.value)}\n"
             )
-        dut._log.info("\n ------------------------------------------------------- \n")
+
+            dut._log.info("------------------------------------------------------- \n"
+                f"PROG_MEM_READ={safe_int(dut.prog_mem_read_valid.value)} "
+                f"PROG_MEM_ACK={safe_int(dut.prog_mem_read_ack.value)}\n"
+                f"DATA_MEM_READ={safe_int(dut.MEM_READ.value)} DATA_MEM_WRITE={safe_int(dut.MEM_WRITE.value)}\n"
+                f"REG_WRITE={safe_int(dut.REG_WRITE.value)}\n"
+                f"------------------------------------------------------- \n")
+
+            dut._log.info("------------------------------------------------------- \n")
+            for lane in range(LANE_WIDTH):
+                dut._log.info(
+                    f"  Lane {safe_int(dut.lane_id[lane])}: "
+                    f"ThreadIdx: {safe_int(dut.out_thread_id_x[lane].value)} "
+                    #f"LSU_State: {get_state(LSU_State, dut.lsu_state[lane].value)} "
+                    f"rm_data={safe_int(dut.rm_data[lane].value)}, rn_data={safe_int(dut.rn_data[lane].value)} " 
+                    f"ALU_Out: {safe_int(dut.alu_out[lane].value)} "
+                    f"mem_read_valid={safe_int(dut.mem_read_valid[lane].value)} "
+                    f"mem_write_valid={safe_int(dut.mem_write_valid[lane].value)} "
+                    f"mem_addr={safe_int(dut.mem_addr[lane].value)} "
+                    f"mem_write_data={safe_int(dut.mem_write_data[lane].value)} "
+                    f"mem_read_data={safe_int(dut.mem_read_data[lane].value)}"
+                )
+            dut._log.info("\n ------------------------------------------------------- \n")
+        
+        else:
+            print(f"Cycle: {cycle}")
         
         cycle += 1
     
@@ -100,10 +104,6 @@ class ProgramMemoryModel:
                 addr = safe_int(self.dut.prog_mem_addr.value)
                 self.dut.prog_mem_read_data.value = self.mem[addr]
                 self.dut.prog_mem_read_ack.value = 1
-                self.dut._log.info("------------------------------------------------------- \n"
-                f"PROG_MEM_ADDR={safe_int(addr)} "
-                f"PROG_MEM_DATA={safe_hex(self.mem[addr])} "
-                f"------------------------------------------------------- \n")
 
             else:
                 self.dut.prog_mem_read_ack.value = 0
@@ -142,16 +142,24 @@ class DataMemoryModel:
                 else:
                     self.dut.data_mem_write_ack[lane].value = 0
     
-    def dump(self, max_lines=2**ADDR_WIDTH):
+    def dump(self, line_width = 4):
         """Print memory contents as Addr[N]: VALUE for each address."""
         mem_size = len(self.mem)
+
         print("\nData Memory Dump:")
         print("-" * 30)
+
         for addr in range(mem_size):
-            if max_lines is not None and addr >= max_lines:
-                break
-            print(f"Addr[{addr}]: {self.mem[addr]}")
-        print("-" * 30)
+            if addr % line_width == 0:
+                if addr != 0:
+                    print()
+                    
+            if (addr == NUM_THREADS * 2):
+                print("-"*15 + "Result addresses" + "-"*15)
+
+            print(f"M[{addr:3}]: {self.mem[addr]:<5}", end="  ")
+
+    print("\n" + "-" * 30)
 
 @cocotb.test()
 async def test_simd_vector_add(dut):
@@ -176,23 +184,6 @@ async def test_simd_vector_add(dut):
     data_mem.dump()
     
     # Load vector addition program
-    '''
-    instructions = [
-        0x1021C3A0,  # MUL R4, R28, R29 
-        0x82043C0,  # ADD R4, R4, R30
-        0x20200000,  # CONST R5, 0
-        0x20300020,  # CONST R6, 32
-        0x20380040,  # CONST R7, 64
-        0x8405080,  # ADD R8, R5, R4
-        0x408000,  # LDUR R8, R8
-        0x8486080,  # ADD R9, R6, R4
-        0x489000,  # LDUR R9, R9
-        0x8508120,  # ADD R10, R8, R9
-        0x8587080,  # ADD R11, R7, R4
-        0x400B140,  # STUR R10, R11
-        0xFC000000   # RET
-    ]
-    '''
     instructions = [
         0b000100_0000100_0011100_0011101_00000, # MUL R4, R28, R29 
         0b000010_0000100_0000100_0011110_00000, # ADD R4, R4, R30
@@ -231,19 +222,14 @@ async def test_simd_vector_add(dut):
     dut.simd_start.value = 0
     await RisingEdge(dut.clk)
 
-#    for i in range(100):
-#      await RisingEdge(dut.clk)
-
     while dut.simd_done.value != 1:
         await RisingEdge(dut.clk)    
     
     data_mem.dump()
 
-    '''
-    for i in range(64):
-        actual = data_mem.mem[128 + i]
+    for i in range(NUM_THREADS):
+        actual = data_mem.mem[NUM_THREADS*2 + i]
         expected = i + i  # A[i] + B[i]
         assert actual == expected, f"Mismatch at {i}: {actual} vs {expected}"
 
     dut._log.info("SIMD vector addition kernel test passed for all lanes.")
-    '''
